@@ -128,6 +128,18 @@ def money_in_cents(value):
     return int((amount * 100).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
 
 
+def valid_cpf(value):
+    cpf = re.sub(r"\D", "", str(value or ""))
+    if len(cpf) != 11 or len(set(cpf)) == 1:
+        return False
+    for position in (9, 10):
+        total = sum(int(cpf[index]) * (position + 1 - index) for index in range(position))
+        digit = (total * 10) % 11 % 10
+        if int(cpf[position]) != digit:
+            return False
+    return True
+
+
 def call_blackcat(path, method, api_key, payload=None):
     body = None if payload is None else json.dumps(payload, ensure_ascii=False).encode("utf-8")
     headers = {"X-API-Key": api_key, "Accept": "application/json"}
@@ -268,7 +280,7 @@ class StoreHandler(SimpleHTTPRequestHandler):
             if not 10 <= len(phone) <= 13:
                 raise ValueError("Informe um telefone válido com DDD.")
             document = re.sub(r"\D", "", str((customer.get("document") or {}).get("number", "")))
-            if len(document) != 11:
+            if not valid_cpf(document):
                 raise ValueError("Informe um CPF válido para o pagamento.")
             address = {
                 "name": name,

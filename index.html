@@ -4,10 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>P&amp;C Almofadas Exclusivas · Conforto e bem-estar</title>
-  <link id="faviconLink" rel="icon" type="image/png" href="imagens/logo-pc-almofadas.png">
+  <link id="faviconLink" rel="icon" type="image/svg+xml" href="imagens/logo-pc-simbolo.svg">
+  <meta name="theme-color" content="#f7f4ec">
+  <meta name="description" content="Encontre almofadas, massageadores e produtos de conforto para a sua rotina na P&amp;C Almofadas Exclusivas.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/brand-refresh.css">
 </head>
 <body id="top">
   <div class="editorial-strip">
@@ -23,7 +26,7 @@
   <header class="header">
     <div class="container">
       <a class="brand" href="index.html">
-        <img id="logoImg" src="imagens/logo-pc-almofadas.png" alt="P&amp;C Almofadas Exclusivas">
+        <img id="logoImg" src="imagens/logo-pc-exclusivas.svg" alt="P&amp;C Almofadas Exclusivas">
         <div>
           <span id="sloganLoja">Conforto, cuidado e bem-estar para o seu dia.</span>
         </div>
@@ -37,7 +40,7 @@
       <div class="header-actions">
         <a class="btn btn-ouro" id="waLink" href="#" target="_blank" rel="noreferrer">Fale com a gente</a>
         <button class="icon-btn" id="btnCart" aria-label="Carrinho">
-          🛒
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.2 11.2a2 2 0 0 0 2 1.6h8.5a2 2 0 0 0 1.9-1.4L21 9H6"/><circle cx="10" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg>
           <span class="cart-count" id="cartCount">0</span>
         </button>
       </div>
@@ -56,15 +59,20 @@
   </nav>
 
   <section class="hero" aria-labelledby="heroTitulo">
-    <a class="hero-banner-link" href="#grid" data-category-link="Todos" aria-label="Explore todos os produtos de conforto e bem-estar">
-      <img id="bannerImg" src="imagens/banner.svg" alt="Alívio e bem-estar imediato. Relaxe e sinta o conforto que seu corpo merece.">
-    </a>
-    <div class="hero-mobile-copy">
-      <p class="hero-kicker">Conforto · Cuidado · Bem-estar</p>
+    <div class="hero-copy">
+      <p class="hero-kicker">P&amp;C Almofadas Exclusivas <span aria-hidden="true">&middot;</span> Conforto para a sua rotina</p>
       <h1 id="heroTitulo">Conforto, cuidado e bem-estar para o seu dia.</h1>
-      <p>Explore produtos de massagem, ergonomia e conforto para a sua rotina.</p>
-      <a class="btn btn-ouro" href="#grid" data-category-link="Massageadores">Conheça os massageadores <span aria-hidden="true">→</span></a>
+      <p class="hero-description">Descubra produtos selecionados para deixar seus momentos de descanso mais acolhedores.</p>
+      <a class="btn hero-cta" href="#grid" data-category-link="Todos">Encontre seu conforto <span aria-hidden="true">&rarr;</span></a>
+      <div class="hero-assurances" aria-label="Vantagens da loja">
+        <span><i aria-hidden="true">&#10003;</i> Atendimento próximo</span>
+        <span><i aria-hidden="true">&#10003;</i> Compra com informação clara</span>
+      </div>
     </div>
+    <a class="hero-visual" href="#grid" data-category-link="Todos" aria-label="Ver produtos de conforto e bem-estar">
+      <img id="bannerImg" src="imagens/hero-conforto.jpg" alt="Pessoa descansando com apoio ergonômico azul" fetchpriority="high" decoding="async">
+      <span class="hero-visual-note"><strong>Seu momento de pausa</strong><small>Encontre o apoio ideal para você</small></span>
+    </a>
   </section>
 
   <section class="quick-categories" aria-labelledby="quickCategoriesTitle">
@@ -211,7 +219,7 @@ CEP 22640-102</address>
       <div class="footer-content">
         <section class="footer-brand" aria-labelledby="footerStoreName">
           <a class="footer-brand-name" href="index.html" id="footerStoreName" aria-label="Página inicial da P&C Almofadas Exclusivas">
-            <img id="footerLogo" src="imagens/logo-pc-almofadas.png" alt="P&amp;C Almofadas Exclusivas">
+            <img id="footerLogo" src="imagens/logo-pc-exclusivas.svg" alt="P&amp;C Almofadas Exclusivas">
             <span class="visually-hidden" id="rodapeNome">P&amp;C Almofadas Exclusivas</span>
           </a>
           <p>Produtos para conforto, ergonomia e bem-estar.</p>
@@ -305,7 +313,7 @@ CEP 22640-102</address>
   <aside class="drawer" id="cartDrawer">
     <div class="drawer-head">
       <div class="cart-heading">
-        <span class="cart-heading-icon" aria-hidden="true">🛒</span>
+        <span class="cart-heading-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 4h2l2.2 11.2a2 2 0 0 0 2 1.6h8.5a2 2 0 0 0 1.9-1.4L21 9H6"/><circle cx="10" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg></span>
         <div>
           <strong>Seu carrinho</strong>
           <span id="cartItemCount">0 produtos</span>

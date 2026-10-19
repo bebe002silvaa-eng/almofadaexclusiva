@@ -11,9 +11,9 @@ window.LOJA_PADRAO = {
     email: "contato@mineironetuai.com.br",
     endereco: "Avenida das Américas, 4666\nQuiosque P35, Nível Lagoa\nBarra da Tijuca\nRio de Janeiro/RJ\nCEP 22640-102",
     horario: "Seg a Sáb · 8h às 18h",
-    logo: "imagens/logo-pc-almofadas.png",
+    logo: "imagens/logo-pc-exclusivas.svg",
     banner: "https://images2.ray-ban.com//prod-onecp-record-files/pieyewear/0b4f6688-00eb-4767-a0b4-b4750075a4fb/0RW4011__690571__P21__shad__qt.png?impolicy=RB_Product_clone&width=720&bgc=%23f2f2f2",
-    favicon: "imagens/logo-pc-almofadas.png"
+    favicon: "imagens/logo-pc-simbolo.svg"
   },
   pix: {
     chave: "",
@@ -478,9 +478,9 @@ window.LOJA_PADRAO.loja = {
   slogan: "Conforto, cuidado e bem-estar para o seu dia.",
   whatsapp: "552122535539",
   telefone: "(21) 2253-5539",
-  banner: "imagens/banner-bem-estar.png",
-  logo: "imagens/logo-pc-almofadas.png",
-  favicon: "imagens/logo-pc-almofadas.png",
+  banner: "imagens/hero-conforto.jpg",
+  logo: "imagens/logo-pc-exclusivas.svg",
+  favicon: "imagens/logo-pc-simbolo.svg",
   endereco: "Avenida das Américas, 4666\nQuiosque P35, Nível Lagoa\nBarra da Tijuca\nRio de Janeiro/RJ\nCEP 22640-102"
 };
 window.LOJA_PADRAO.pix = {
@@ -946,12 +946,19 @@ function aplicarIdentidadePC(catalogo) {
     catalogo.loja.endereco = window.LOJA_PADRAO.loja.endereco;
     alterado = true;
   }
-  if (["imagens/logo.svg", "imagens/logo-pc-almofadas.svg"].includes(catalogo.loja.logo)) {
+  if (["imagens/logo.svg", "imagens/logo-pc-almofadas.svg", "imagens/logo-pc-almofadas.png"].includes(catalogo.loja.logo)) {
     catalogo.loja.logo = window.LOJA_PADRAO.loja.logo;
     alterado = true;
   }
-  if (["imagens/logo.svg", "imagens/logo-pc-almofadas.svg"].includes(catalogo.loja.favicon)) {
+  if (["imagens/logo.svg", "imagens/logo-pc-almofadas.svg", "imagens/logo-pc-almofadas.png"].includes(catalogo.loja.favicon)) {
     catalogo.loja.favicon = window.LOJA_PADRAO.loja.favicon;
+    alterado = true;
+  }
+  if (
+    ["imagens/banner.svg", "imagens/banner-bem-estar.png"].includes(catalogo.loja.banner)
+    || (typeof catalogo.loja.banner === "string" && catalogo.loja.banner.startsWith("https://images2.ray-ban.com/"))
+  ) {
+    catalogo.loja.banner = window.LOJA_PADRAO.loja.banner;
     alterado = true;
   }
   if (["MINEIRO NET UAI LTDA", "MINEIRO CARDS UAI"].includes(catalogo.pix.nomeRecebedor)) {
@@ -970,9 +977,28 @@ function aplicarIdentidadePC(catalogo) {
   return alterado;
 }
 
+function lerArmazenamentoLocal(chave) {
+  try {
+    return localStorage.getItem(chave);
+  } catch (erro) {
+    console.warn("O armazenamento local não está disponível neste navegador.", erro);
+    return null;
+  }
+}
+
+function gravarArmazenamentoLocal(chave, valor) {
+  try {
+    localStorage.setItem(chave, valor);
+    return true;
+  } catch (erro) {
+    console.warn("Não foi possível salvar os dados localmente.", erro);
+    return false;
+  }
+}
+
 window.carregarLojaConfigurada = function () {
   const chave = "mineironet_loja";
-  const salvo = localStorage.getItem(chave);
+  const salvo = lerArmazenamentoLocal(chave);
   if (!salvo) return structuredClone(window.LOJA_PADRAO);
 
   let dadosSalvos;
@@ -999,7 +1025,7 @@ window.carregarLojaConfigurada = function () {
 
   if (loja.pix.chave === "00000000000000") {
     loja.pix.chave = "";
-    localStorage.setItem(chave, JSON.stringify(loja));
+    gravarArmazenamentoLocal(chave, JSON.stringify(loja));
   }
 
   let identidadeAtualizada = aplicarIdentidadePC(loja);
@@ -1021,18 +1047,18 @@ window.carregarLojaConfigurada = function () {
     loja.loja.banner = window.LOJA_PADRAO.loja.banner;
     identidadeAtualizada = true;
   }
-  if (identidadeAtualizada) localStorage.setItem(chave, JSON.stringify(loja));
+  if (identidadeAtualizada) gravarArmazenamentoLocal(chave, JSON.stringify(loja));
 
   if (dadosSalvos.versaoCatalogo !== window.LOJA_PADRAO.versaoCatalogo) {
     loja.categorias = [...window.LOJA_PADRAO.categorias];
     loja.produtos = structuredClone(window.LOJA_PADRAO.produtos);
     loja.versaoCatalogo = window.LOJA_PADRAO.versaoCatalogo;
-    localStorage.setItem(chave, JSON.stringify(loja));
+    gravarArmazenamentoLocal(chave, JSON.stringify(loja));
   }
 
   const estavaAtualizada = Number(loja.versaoProdutosComplementares) >= VERSAO_PRODUTOS_COMPLEMENTARES;
   const lojaAtualizada = window.aplicarProdutosComplementares(loja);
-  if (!estavaAtualizada) localStorage.setItem(chave, JSON.stringify(lojaAtualizada));
+  if (!estavaAtualizada) gravarArmazenamentoLocal(chave, JSON.stringify(lojaAtualizada));
   return lojaAtualizada;
 };
 
@@ -1041,10 +1067,10 @@ const STORAGE_PRODUTOS_RECENTES = "mineironet_produtos_recentes";
 window.registrarProdutoVisitado = function (id) {
   if (id === undefined || id === null || String(id).trim() === "") return;
   try {
-    const salvo = JSON.parse(localStorage.getItem(STORAGE_PRODUTOS_RECENTES) || "[]");
+    const salvo = JSON.parse(lerArmazenamentoLocal(STORAGE_PRODUTOS_RECENTES) || "[]");
     const ids = Array.isArray(salvo) ? salvo.filter((produtoId) => typeof produtoId === "string") : [];
     const produtoId = String(id);
-    localStorage.setItem(
+    gravarArmazenamentoLocal(
       STORAGE_PRODUTOS_RECENTES,
       JSON.stringify([produtoId, ...ids.filter((item) => item !== produtoId)].slice(0, 8))
     );
@@ -1055,7 +1081,7 @@ window.registrarProdutoVisitado = function (id) {
 
 window.listarProdutosRecentes = function (produtos, limite = 4) {
   try {
-    const salvo = JSON.parse(localStorage.getItem(STORAGE_PRODUTOS_RECENTES) || "[]");
+    const salvo = JSON.parse(lerArmazenamentoLocal(STORAGE_PRODUTOS_RECENTES) || "[]");
     if (!Array.isArray(salvo)) return [];
     const produtosPorId = new Map(produtos.map((produto) => [String(produto.id), produto]));
     return salvo
@@ -1098,9 +1124,6 @@ window.carregarLojaRemota = async function () {
       || catalogoComServidor.loja.slogan === "Internet rápida pra sua casa, uai!"
     ) {
       catalogoComServidor.loja.slogan = window.LOJA_PADRAO.loja.slogan;
-    }
-    if (catalogoComServidor.loja.banner === "imagens/banner.svg") {
-      catalogoComServidor.loja.banner = window.LOJA_PADRAO.loja.banner;
     }
     return window.aplicarProdutosComplementares(catalogoComServidor);
   } catch (erro) {

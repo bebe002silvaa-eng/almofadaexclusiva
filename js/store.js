@@ -3,7 +3,43 @@ const STORAGE_CARRINHO = "mineironet_carrinho";
 const STORAGE_PEDIDOS = "mineironet_pedidos";
 
 let loja = window.carregarLojaConfigurada();
-let carrinho = JSON.parse(localStorage.getItem(STORAGE_CARRINHO) || "[]");
+function lerCarrinhoSalvo() {
+  try {
+    const dados = JSON.parse(localStorage.getItem(STORAGE_CARRINHO) || "[]");
+    if (!Array.isArray(dados)) return [];
+    return dados.filter((item) => (
+      item && typeof item.id === "string" && Number.isInteger(Number(item.qtd))
+      && Number(item.qtd) > 0 && Number.isFinite(Number(item.preco))
+      && Number(item.preco) >= 0 && typeof item.nome === "string"
+    )).map((item) => ({
+      id: item.id,
+      nome: item.nome,
+      preco: Number(item.preco),
+      imagem: typeof item.imagem === "string" ? item.imagem : "",
+      qtd: Math.min(99, Number(item.qtd))
+    }));
+  } catch (erro) {
+    console.warn("O carrinho salvo estava inválido e foi iniciado novamente.", erro);
+    return [];
+  }
+}
+
+function escaparHTML(valor) {
+  return String(valor ?? "").replace(/[&<>\"']/g, (caractere) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
+  })[caractere]);
+}
+
+function atribuirImagem(imagem, origem, alternativa = "imagens/logo-pc-simbolo.svg") {
+  if (!imagem) return;
+  imagem.onerror = () => {
+    imagem.onerror = null;
+    imagem.src = alternativa;
+  };
+  imagem.src = origem || alternativa;
+}
+
+let carrinho = lerCarrinhoSalvo();
 let categoriaAtiva = "Todos";
 let busca = "";
 let produtoAberto = null;
@@ -26,7 +62,12 @@ function precoParaExibicao(produto) {
 }
 
 function salvarCarrinho() {
-  localStorage.setItem(STORAGE_CARRINHO, JSON.stringify(carrinho));
+  try {
+    localStorage.setItem(STORAGE_CARRINHO, JSON.stringify(carrinho));
+  } catch (erro) {
+    console.error("Não foi possível salvar o carrinho neste navegador.", erro);
+    alert("Não foi possível salvar o carrinho neste navegador. Verifique o espaço disponível e as configurações de privacidade.");
+  }
   atualizarBadge();
 }
 
@@ -51,15 +92,15 @@ function produtosFiltrados() {
 }
 
 function renderTopo() {
-  $("#logoImg").src = loja.loja.logo;
+  atribuirImagem($("#logoImg"), loja.loja.logo);
   $("#logoImg").alt = loja.loja.nome;
-  $("#footerLogo").src = loja.loja.logo;
+  atribuirImagem($("#footerLogo"), loja.loja.logo);
   $("#footerLogo").alt = loja.loja.nome;
   $("#faviconLink").href = loja.loja.favicon || loja.loja.logo;
-  $("#checkoutLogo").src = loja.loja.logo;
+  atribuirImagem($("#checkoutLogo"), loja.loja.logo);
   $("#checkoutBrandName").textContent = loja.loja.nome;
   $("#sloganLoja").textContent = loja.loja.slogan;
-  $("#bannerImg").src = loja.loja.banner;
+  atribuirImagem($("#bannerImg"), loja.loja.banner, "imagens/hero-conforto.jpg");
   $("#heroTitulo").textContent = loja.loja.slogan;
   $("#topTelefone").textContent = loja.loja.telefone;
   $("#topHorario").textContent = loja.loja.horario;
@@ -84,6 +125,8 @@ function renderTopo() {
   $("#sobreEmail").textContent = loja.loja.email;
   $("#rodapeNome").textContent = loja.loja.nome;
   $("#rodapeRazao").textContent = loja.loja.razaoSocial;
+  const descricao = document.querySelector('meta[name="description"]');
+  if (descricao) descricao.content = `${loja.loja.slogan} Confira produtos de conforto, ergonomia e bem-estar.`;
 }
 
 function renderCategorias() {
@@ -92,7 +135,7 @@ function renderCategorias() {
   box.innerHTML = loja.categorias
     .map(
       (c) =>
-        `<button class="chip ${c === categoriaAtiva ? "ativo" : ""}" data-cat="${c}" aria-pressed="${c === categoriaAtiva}">${c}</button>`
+        `<button class="chip ${c === categoriaAtiva ? "ativo" : ""}" data-cat="${escaparHTML(c)}" aria-pressed="${c === categoriaAtiva}">${escaparHTML(c)}</button>`
     )
     .join("");
   $$("#cats .chip").forEach((btn) => {
@@ -117,10 +160,10 @@ function renderProdutos() {
       (p) => `
       <article class="card">
         ${p.destaque ? `<span class="badge">Destaque</span>` : ""}
-        <div class="card-img" data-id="${p.id}"><img src="${p.imagem}" alt="${p.nome}"></div>
+        <div class="card-img" data-id="${escaparHTML(p.id)}"><img src="${escaparHTML(p.imagem)}" alt="${escaparHTML(p.nome)}" loading="lazy" decoding="async"></div>
         <div class="card-body">
-          <div class="cat">${p.categoria}</div>
-          <h3><a href="${urlProduto(p.id)}" data-product-link="${p.id}">${p.nome}</a></h3>
+          <div class="cat">${escaparHTML(p.categoria)}</div>
+          <h3><a href="${escaparHTML(urlProduto(p.id))}" data-product-link="${escaparHTML(p.id)}">${escaparHTML(p.nome)}</a></h3>
           <div class="precos">
             <strong class="preco">${precoParaExibicao(p)}</strong>
             ${p.precoPix ? `<span class="preco-pix-label">no PIX</span>` : ""}
@@ -129,16 +172,23 @@ function renderProdutos() {
             ${p.antigo ? `<span class="antigo">${dinheiro(p.antigo)}</span>` : ""}
           </div>
           <p class="product-stock ${p.estoque > 0 && produtoTemPreco(p) ? "" : "pendente"}">
-            ${!produtoTemPreco(p) ? "Preço a confirmar com a loja" : p.estoque > 0 ? `${p.estoque} em estoque` : "Estoque a confirmar"}
+            ${!produtoTemPreco(p) ? "Preço a confirmar com a loja" : p.estoque > 0 ? `${Number(p.estoque)} em estoque` : "Estoque a confirmar"}
           </p>
-          <a class="btn btn-ghost" data-details="${p.id}" href="${urlProduto(p.id)}">Ver detalhes</a>
-          <button class="btn btn-verde" data-add="${p.id}" ${p.estoque > 0 && produtoTemPreco(p) ? "" : "disabled"}>
+          <a class="btn btn-ghost" data-details="${escaparHTML(p.id)}" href="${escaparHTML(urlProduto(p.id))}">Ver detalhes</a>
+          <button class="btn btn-verde" data-add="${escaparHTML(p.id)}" ${p.estoque > 0 && produtoTemPreco(p) ? "" : "disabled"}>
             ${!produtoTemPreco(p) ? "Consulte o preço" : p.estoque > 0 ? "Adicionar" : "Atualize o estoque"}
           </button>
         </div>
       </article>`
     )
     .join("");
+
+  $$(".card-img img").forEach((imagem) => {
+    imagem.onerror = () => {
+      imagem.onerror = null;
+      imagem.src = "imagens/logo-pc-simbolo.svg";
+    };
+  });
 
   $$("[data-id]").forEach((el) => {
     el.tabIndex = 0;
@@ -307,9 +357,9 @@ function renderCarrinho() {
   if (!carrinho.length) {
     box.innerHTML = `
       <div class="cart-empty">
-        <span class="cart-empty-icon" aria-hidden="true">🃏</span>
+        <span class="cart-empty-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 4h2l2.2 11.2a2 2 0 0 0 2 1.6h8.5a2 2 0 0 0 1.9-1.4L21 9H6"/><circle cx="10" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg></span>
         <h3>Seu carrinho está vazio</h3>
-        <p>Explore nossos decks Pokémon e encontre seu próximo baralho.</p>
+        <p>Encontre um produto para deixar sua rotina mais confortável.</p>
         <button class="btn btn-verde" id="verProdutosCarrinho" type="button">Ver produtos</button>
       </div>`;
     $("#cartSubtotal").textContent = dinheiro(0);
@@ -323,23 +373,29 @@ function renderCarrinho() {
     .map(
       (i) => `
       <div class="item">
-        <a class="cart-item-image" href="produto.html?id=${encodeURIComponent(i.id)}" aria-label="Ver ${i.nome}">
-          <img src="${i.imagem}" alt="">
+        <a class="cart-item-image" href="produto.html?id=${encodeURIComponent(i.id)}" aria-label="Ver ${escaparHTML(i.nome)}">
+          <img src="${escaparHTML(i.imagem)}" alt="">
         </a>
         <div class="cart-item-info">
-          <a class="cart-item-name" href="produto.html?id=${encodeURIComponent(i.id)}">${i.nome}</a>
+          <a class="cart-item-name" href="produto.html?id=${encodeURIComponent(i.id)}">${escaparHTML(i.nome)}</a>
           <strong class="cart-item-price">${dinheiro(i.preco)}</strong>
           <div class="qty">
-            <button type="button" data-menos="${i.id}" aria-label="Diminuir quantidade de ${i.nome}">−</button>
+            <button type="button" data-menos="${escaparHTML(i.id)}" aria-label="Diminuir quantidade de ${escaparHTML(i.nome)}">−</button>
             <span aria-label="Quantidade">${i.qtd}</span>
-            <button type="button" data-mais="${i.id}" aria-label="Aumentar quantidade de ${i.nome}">+</button>
+            <button type="button" data-mais="${escaparHTML(i.id)}" aria-label="Aumentar quantidade de ${escaparHTML(i.nome)}">+</button>
           </div>
           <strong class="cart-item-subtotal">${dinheiro(i.preco * i.qtd)}</strong>
         </div>
-        <button class="cart-remove-button" type="button" data-rem="${i.id}" aria-label="Remover ${i.nome} do carrinho">Remover</button>
+        <button class="cart-remove-button" type="button" data-rem="${escaparHTML(i.id)}" aria-label="Remover ${escaparHTML(i.nome)} do carrinho">Remover</button>
       </div>`
     )
     .join("");
+  $$(".cart-item-image img").forEach((imagem) => {
+    imagem.onerror = () => {
+      imagem.onerror = null;
+      imagem.src = "imagens/logo-pc-simbolo.svg";
+    };
+  });
   $("#cartSubtotal").textContent = dinheiro(totalCarrinho());
   $("#cartTotal").textContent = dinheiro(totalCarrinho());
   botaoCheckout.disabled = false;
@@ -426,13 +482,18 @@ function mascara(el, tipo) {
 async function buscarCep() {
   const cep = $("#cep").value.replace(/\D/g, "");
   if (cep.length !== 8) return;
-  const r = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-  const d = await r.json();
-  if (d.erro) return;
-  $("#rua").value = d.logradouro || "";
-  $("#bairro").value = d.bairro || "";
-  $("#cidade").value = d.localidade || "";
-  $("#uf").value = d.uf || "";
+  try {
+    const r = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    if (!r.ok) throw new Error(`O ViaCEP respondeu ${r.status}.`);
+    const d = await r.json();
+    if (d.erro) return;
+    $("#rua").value = d.logradouro || "";
+    $("#bairro").value = d.bairro || "";
+    $("#cidade").value = d.localidade || "";
+    $("#uf").value = d.uf || "";
+  } catch (erro) {
+    console.warn("Não foi possível buscar o CEP. O endereço pode ser preenchido manualmente.", erro);
+  }
 }
 
 function txidPedido() {
@@ -444,6 +505,12 @@ function gerarPix() {
   const dados = Object.fromEntries(form.entries());
   if (!dados.nome || !dados.cpf || !dados.telefone || !dados.cep) {
     alert("Preencha nome, CPF, telefone e CEP para gerar o PIX.");
+    return;
+  }
+  if (!window.PixBR.validarCpf(dados.cpf)) {
+    $("#cpf").setCustomValidity("Informe um CPF válido.");
+    $("#cpf").reportValidity();
+    $("#cpf").setCustomValidity("");
     return;
   }
   if (loja.pagamento.metodo === "gateway") {
@@ -632,9 +699,14 @@ async function confirmarPagamento() {
   } else {
     pedidoAtual.status = "pago_informado";
   }
-  const pedidos = JSON.parse(localStorage.getItem(STORAGE_PEDIDOS) || "[]");
-  pedidos.unshift(pedidoAtual);
-  localStorage.setItem(STORAGE_PEDIDOS, JSON.stringify(pedidos));
+  try {
+    const pedidosSalvos = JSON.parse(localStorage.getItem(STORAGE_PEDIDOS) || "[]");
+    const pedidos = Array.isArray(pedidosSalvos) ? pedidosSalvos : [];
+    pedidos.unshift(pedidoAtual);
+    localStorage.setItem(STORAGE_PEDIDOS, JSON.stringify(pedidos));
+  } catch (erro) {
+    console.warn("Não foi possível guardar o pedido neste navegador.", erro);
+  }
   $("#checkoutForm").style.display = "none";
   $("#pixBox").classList.remove("visivel");
   $("#sucesso").classList.add("visivel");

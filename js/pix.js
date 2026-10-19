@@ -98,5 +98,5 @@
     return payload;
   }
 
-  global.PixBR = { gerarPayload, validarChave };
+  global.PixBR = { gerarPayload, validarChave, validarCpf };
 })(window);

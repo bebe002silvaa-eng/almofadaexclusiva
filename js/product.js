@@ -5,6 +5,14 @@ let produto = loja.produtos.find((item) => item.id === params.get("id"));
 
 const $ = (seletor) => document.querySelector(seletor);
 
+function atribuirImagem(imagem, origem, alternativa = "imagens/logo-pc-simbolo.svg") {
+  imagem.onerror = () => {
+    imagem.onerror = null;
+    imagem.src = alternativa;
+  };
+  imagem.src = origem || alternativa;
+}
+
 function dinheiro(valor) {
   return Number(valor).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
@@ -72,7 +80,10 @@ function lerCarrinho() {
 
   const carrinho = JSON.parse(salvo);
   if (!Array.isArray(carrinho)) throw new Error("O formato salvo para o carrinho não é válido.");
-  return carrinho;
+  return carrinho.filter((item) => (
+    item && typeof item.id === "string" && Number.isInteger(Number(item.qtd))
+    && Number(item.qtd) > 0 && Number.isFinite(Number(item.preco))
+  )).map((item) => ({ ...item, qtd: Number(item.qtd), preco: Number(item.preco) }));
 }
 
 function atualizarSubtotal() {
@@ -86,7 +97,7 @@ function atualizarSubtotal() {
 
 function selecionarImagem(imagem, indice, total) {
   const principal = $("#productMainImage");
-  principal.src = imagem;
+  atribuirImagem(principal, imagem);
   principal.alt = `Foto ${indice + 1} de ${total} · ${produto.nome}`;
   $("#productThumbnails").querySelectorAll("button").forEach((botao, posicao) => {
     const ativa = posicao === indice;
@@ -101,7 +112,7 @@ function renderizarGaleria() {
   const miniaturas = $("#productThumbnails");
   miniaturas.replaceChildren();
 
-  $("#productMainImage").src = fotos[0] || produto.imagem;
+  atribuirImagem($("#productMainImage"), fotos[0] || produto.imagem);
   $("#productMainImage").alt = `Foto principal · ${produto.nome}`;
   miniaturas.hidden = fotos.length < 2;
 
@@ -112,7 +123,7 @@ function renderizarGaleria() {
     botao.className = `product-thumbnail${indice === 0 ? " ativa" : ""}`;
     botao.setAttribute("aria-label", `Ver foto ${indice + 1} de ${fotos.length}`);
     botao.setAttribute("aria-pressed", String(indice === 0));
-    imagem.src = foto;
+    atribuirImagem(imagem, foto);
     imagem.alt = "";
     botao.append(imagem);
     botao.addEventListener("click", () => selecionarImagem(foto, indice, fotos.length));
@@ -124,8 +135,10 @@ function renderizarProduto() {
   const nomeLoja = loja.loja.nome;
   $("#productStoreName").textContent = nomeLoja;
   $("#productFooterName").textContent = nomeLoja;
-  $("#productLogo").src = loja.loja.logo;
+  atribuirImagem($("#productLogo"), loja.loja.logo);
   $("#productLogo").alt = nomeLoja;
+  atribuirImagem($("#productFooterLogo"), loja.loja.logo);
+  $("#productFooterLogo").alt = nomeLoja;
   $("#productFavicon").href = loja.loja.favicon || loja.loja.logo;
   $("#produtoWhatsApp").href = `https://wa.me/${loja.loja.whatsapp}`;
   $("#productFooterLegal").textContent = loja.loja.razaoSocial;
