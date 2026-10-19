@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b3d48">
+  <meta name="description" content="Confira fotos, descrição, preço e disponibilidade dos produtos de conforto e bem-estar.">
+  <title>Produto · P&amp;C Almofadas Exclusivas</title>
+  <link id="productFavicon" rel="icon" type="image/png" href="imagens/logo-pc-almofadas.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="produto-page">
+  <div class="topbar">
+    <div class="container">
+      <span>Conforto e bem-estar · P&amp;C Almofadas Exclusivas</span>
+      <a id="produtoWhatsApp" href="#" target="_blank" rel="noreferrer">Dúvidas? Fale com a loja</a>
+    </div>
+  </div>
+
+  <header class="product-header">
+    <div class="container">
+      <a class="product-brand" href="index.html" aria-label="Voltar para a loja">
+        <img id="productLogo" src="imagens/logo-pc-almofadas.png" alt="P&amp;C Almofadas Exclusivas">
+        <span><strong id="productStoreName">P&amp;C Almofadas Exclusivas</strong><small>Conforto, ergonomia e bem-estar</small></span>
+      </a>
+      <a class="product-back-link" href="index.html#grid">← Voltar para os produtos</a>
+      <a class="product-cart-link" href="index.html?carrinho=1#grid" aria-label="Abrir carrinho">
+        <span aria-hidden="true">🛒</span> Carrinho <span class="cart-count" id="productCartCount">0</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="product-page-main container">
+    <nav class="product-breadcrumb" aria-label="Caminho da página">
+      <a href="index.html">Início</a><span aria-hidden="true">/</span>
+      <a id="productBreadcrumbCategory" href="index.html#grid">Produtos</a><span aria-hidden="true">/</span>
+      <span id="productBreadcrumbName">Produto</span>
+    </nav>
+
+    <div id="productPageContent" class="product-detail-layout" hidden>
+      <section class="product-detail-gallery" aria-label="Fotos do produto">
+        <div class="product-detail-image">
+          <img id="productMainImage" alt="">
+        </div>
+        <div class="product-detail-thumbnails" id="productThumbnails" aria-label="Outras fotos do produto"></div>
+      </section>
+
+      <section class="product-detail-info" aria-labelledby="productName">
+        <div class="product-detail-category" id="productCategory"></div>
+        <h1 id="productName"></h1>
+        <p class="product-detail-stock" id="productStock"></p>
+        <p class="product-detail-description" id="productDescription"></p>
+        <dl class="product-detail-specs" id="productSpecs" hidden></dl>
+
+        <div class="product-detail-price">
+          <strong id="productPrice"></strong>
+          <del id="productOldPrice" hidden></del>
+        </div>
+        <p class="product-price-reference" id="productPriceReference" hidden></p>
+        <p class="product-pix-note" id="productPixNote">Pagamento via PIX no checkout</p>
+
+        <div class="product-buy-row">
+          <div class="product-quantity">
+            <label for="productQuantity">Quantidade</label>
+            <div class="quantity-control">
+              <button type="button" id="quantityMinus" aria-label="Diminuir quantidade">−</button>
+              <input id="productQuantity" type="number" min="1" value="1" inputmode="numeric">
+              <button type="button" id="quantityPlus" aria-label="Aumentar quantidade">+</button>
+            </div>
+          </div>
+          <p class="product-subtotal">Subtotal <strong id="productSubtotal"></strong></p>
+        </div>
+
+        <button class="btn btn-verde product-add-button" id="productAddButton" type="button">Adicionar ao carrinho</button>
+        <p class="product-stock-warning" id="productStockWarning" hidden>Confirme o estoque e atualize as quantidades pelo painel antes de disponibilizar para compra.</p>
+
+        <div class="product-after-add" id="productAfterAdd" role="status" hidden>
+          <strong id="productAddedMessage">Produto adicionado ao carrinho.</strong>
+          <a class="btn btn-ouro" href="index.html?carrinho=1#grid">Ir para o carrinho e finalizar</a>
+        </div>
+
+        <div class="product-purchase-notes">
+          <p><span aria-hidden="true">✓</span> <span id="productPurchaseCheck">Confirme os detalhes do produto com a loja.</span></p>
+          <p><span aria-hidden="true">✓</span> Revise o valor e os dados do PIX antes de pagar.</p>
+          <a id="productContactLink" href="#" target="_blank" rel="noreferrer">Perguntar sobre este produto pelo WhatsApp →</a>
+        </div>
+      </section>
+    </div>
+
+    <section id="productNotFound" class="product-not-found" hidden>
+      <span aria-hidden="true">🛍️</span>
+      <h1>Não encontramos esse produto</h1>
+      <p>Ele pode ter sido removido ou o link pode estar incorreto.</p>
+      <a class="btn btn-verde" href="index.html#grid">Voltar para a loja</a>
+    </section>
+  </main>
+
+  <footer class="rodape product-footer">
+    <div class="product-footer-inner">
+      <a href="index.html" class="product-footer-brand">
+        <img src="imagens/logo-pc-almofadas.png" alt="P&amp;C Almofadas Exclusivas">
+        <span id="productFooterName" class="visually-hidden">P&amp;C Almofadas Exclusivas</span>
+      </a>
+      <div class="product-footer-details">
+        <strong id="productFooterLegal">P&amp;C Almofadas Exclusivas LTDA</strong>
+        <span>CNPJ: <span id="productFooterCnpj">21.985.149/0004-90</span></span>
+        <address id="productFooterAddress">Avenida das Américas, 4666
+Quiosque P35, Nível Lagoa
+Barra da Tijuca
+Rio de Janeiro/RJ
+CEP 22640-102</address>
+      </div>
+      <div class="product-footer-contact">
+        <a id="productFooterEmail" href="mailto:contato@mineironetuai.com.br">contato@mineironetuai.com.br</a>
+        <a id="productFooterWhatsApp" href="#" target="_blank" rel="noreferrer">Fale com a loja pelo WhatsApp</a>
+        <a href="index.html#sobre">Informações da loja</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/product.js"></script>
+</body>
+</html>
