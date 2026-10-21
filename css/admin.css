@@ -78,6 +78,55 @@ h1, h2 { margin: 0 0 12px; }
 .payment-method-option span { display: grid; gap: 5px; }
 .payment-method-option strong { color: #08264f; font-size: 14px; }
 .payment-method-option small { color: #637286; font-size: 11px; line-height: 1.5; }
+.admin-orders { margin: 24px 0 34px; padding: clamp(16px, 2.5vw, 26px); border: 1px solid #dce6e1; border-radius: 18px; background: #fbfdfc; }
+.admin-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 16px; }
+.admin-section-heading h2 { margin: 0 0 5px; }
+.admin-section-heading p, .inventory-heading p { margin: 0; color: #68766f; font-size: 12px; line-height: 1.5; }
+.order-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 16px; }
+.order-metrics article { display: grid; gap: 5px; min-width: 0; padding: 14px; border: 1px solid #e1e9e4; border-radius: 12px; background: #fff; }
+.order-metrics article span { color: #64736a; font-size: 11px; font-weight: 700; }
+.order-metrics article strong { overflow-wrap: anywhere; color: #0b6449; font-size: clamp(17px, 2vw, 22px); }
+.order-metrics article small { color: #77837c; font-size: 10px; line-height: 1.4; }
+.orders-toolbar { display: grid; grid-template-columns: minmax(180px, .55fr) minmax(240px, 1fr); gap: 12px; margin-bottom: 12px; }
+.orders-toolbar label, .inventory-row label { color: #46564c; font-size: 11px; font-weight: 800; }
+.orders-toolbar input, .orders-toolbar select { margin-bottom: 0; }
+.orders-status { min-height: 17px; margin: 8px 0; color: #68766f; font-size: 11px; }
+.order-list { display: grid; gap: 12px; }
+.order-card { min-width: 0; padding: 16px; border: 1px solid #e0e8e3; border-radius: 14px; background: #fff; }
+.order-card-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.order-card-heading > div { display: grid; gap: 4px; min-width: 0; }
+.order-card-heading > div strong { overflow-wrap: anywhere; color: #14251b; font-size: 13px; }
+.order-card-heading small { color: #77837c; font-size: 10px; }
+.order-status { flex: 0 0 auto; padding: 6px 9px; border-radius: 999px; background: #edf1ef; color: #59675f; font-size: 10px; font-weight: 800; }
+.status-awaiting_payment, .status-payment_reported, .status-gateway_review { background: #fff4d7; color: #745516; }
+.status-paid, .status-delivered { background: #e2f4e7; color: #176239; }
+.status-shipped { background: #e8f0ff; color: #28548b; }
+.status-cancelled, .status-expired, .status-refunded { background: #fce8e7; color: #9a332b; }
+.order-card-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 14px; }
+.order-card-grid section { min-width: 0; padding: 12px; border-radius: 10px; background: #f7f9f8; }
+.order-card h4 { margin: 0 0 8px; color: #394a40; font-size: 11px; }
+.order-card-grid p { margin: 4px 0 0; overflow-wrap: anywhere; color: #58675e; font-size: 11px; line-height: 1.5; }
+.order-card-grid .order-total { color: #0b6449; font-size: 16px; font-weight: 900; }
+.order-items { margin-top: 12px; }
+.order-items p { display: flex; justify-content: space-between; gap: 12px; margin: 6px 0; color: #526158; font-size: 11px; line-height: 1.45; }
+.order-items p span { flex: 0 0 auto; font-weight: 800; }
+.order-history { margin-top: 10px; color: #64736a; font-size: 10px; }
+.order-history summary { cursor: pointer; font-weight: 800; }
+.order-history p { margin: 6px 0 0; }
+.order-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #edf1ef; }
+.btn-small { padding: 8px 10px; border: 1px solid #dce6e0; background: #f4f8f5; color: #164c38; font-size: 10px; }
+.btn-confirm { border-color: #b9dec4; background: #e8f6ec; color: #176239; }
+.btn-cancel { border-color: #f0ceca; background: #fff1f0; color: #9a332b; }
+.orders-empty { margin: 0; padding: 18px; border: 1px dashed #d6e0da; border-radius: 12px; color: #6b7971; font-size: 12px; text-align: center; }
+.inventory-heading { margin-top: 24px; padding-top: 18px; border-top: 1px solid #e4ebe7; }
+.inventory-heading h3 { margin: 0 0 5px; color: #163b2b; font-size: 16px; }
+.inventory-list { display: grid; gap: 8px; margin-top: 12px; }
+.inventory-row { display: grid; grid-template-columns: minmax(0, 1fr) 110px auto; align-items: center; gap: 10px; padding: 9px 11px; border: 1px solid #e5ebe7; border-radius: 10px; background: #fff; }
+.inventory-row > div { display: grid; gap: 4px; min-width: 0; }
+.inventory-row > div strong { overflow-wrap: anywhere; color: #24362c; font-size: 11px; }
+.inventory-row > div small { color: #77837c; font-size: 10px; }
+.inventory-row input { min-height: 36px; margin: 4px 0 0; padding: 7px 9px; }
+.inventory-row .btn { margin-top: 14px; }
 [hidden] { display: none !important; }
 @media (max-width: 720px) {
   .admin { width: min(100% - 20px, 600px); margin-top: 10px; }
@@ -93,4 +142,11 @@ h1, h2 { margin: 0 0 12px; }
   .pix-admin-preview { grid-template-columns: minmax(0, 1fr); }
   .pix-preview-image { justify-self: center; }
   .payment-method-options { grid-template-columns: minmax(0, 1fr); }
+  .admin-section-heading { align-items: flex-start; flex-direction: column; }
+  .order-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .orders-toolbar { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .order-card-grid { grid-template-columns: minmax(0, 1fr); }
+  .order-card-heading { flex-direction: column; }
+  .inventory-row { grid-template-columns: minmax(0, 1fr) 90px; }
+  .inventory-row .btn { grid-column: 1 / -1; width: 100%; margin: 0; }
 }

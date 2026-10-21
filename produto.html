@@ -3,8 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#f7f4ec">
+  <meta name="theme-color" content="#073b5e">
   <meta name="description" content="Confira fotos, descrição, preço e disponibilidade dos produtos de conforto e bem-estar.">
+  <link id="productCanonical" rel="canonical" href="https://pcalmofadasexclusivas.online/produto.html">
+  <meta property="og:site_name" content="P&amp;C Almofadas Exclusivas">
+  <meta id="productOgUrl" property="og:url" content="https://pcalmofadasexclusivas.online/produto.html">
+  <meta property="og:type" content="product">
+  <meta id="productOgTitle" property="og:title" content="Produto · P&amp;C Almofadas Exclusivas">
+  <meta id="productOgDescription" property="og:description" content="Confira fotos, descrição, preço e disponibilidade dos produtos de conforto e bem-estar.">
   <title>Produto · P&amp;C Almofadas Exclusivas</title>
   <link id="productFavicon" rel="icon" type="image/svg+xml" href="imagens/logo-pc-simbolo.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -23,7 +29,7 @@
   <header class="product-header">
     <div class="container">
       <a class="product-brand" href="index.html" aria-label="Voltar para a loja">
-        <img id="productLogo" src="imagens/logo-pc-exclusivas.svg" alt="P&amp;C Almofadas Exclusivas">
+        <img id="productLogo" src="imagens/logo-pc-horizontal.png" alt="P&amp;C Almofadas Exclusivas" width="1360" height="428">
         <span><strong id="productStoreName">P&amp;C Almofadas Exclusivas</strong><small>Conforto, ergonomia e bem-estar</small></span>
       </a>
       <a class="product-back-link" href="index.html#grid">← Voltar para os produtos</a>
@@ -44,13 +50,20 @@
       <section class="product-detail-gallery" aria-label="Fotos do produto">
         <div class="product-detail-image">
           <img id="productMainImage" alt="">
+          <p class="product-image-note" id="productImageNote" hidden>Imagem ilustrativa. A foto original deste produto ainda precisa ser enviada.</p>
         </div>
         <div class="product-detail-thumbnails" id="productThumbnails" aria-label="Outras fotos do produto"></div>
+        <p class="product-gallery-note" id="productGalleryNote" hidden>Fotos complementares ilustrativas; confirme modelo, cor, medidas e itens inclusos com a loja.</p>
       </section>
 
       <section class="product-detail-info" aria-labelledby="productName">
         <div class="product-detail-category" id="productCategory"></div>
         <h1 id="productName"></h1>
+        <div class="product-rating" id="productRating" hidden aria-label="Avaliação do produto">
+          <span class="product-rating-stars" id="productRatingStars" aria-hidden="true"></span>
+          <strong id="productRatingValue"></strong>
+          <span id="productRatingCount"></span>
+        </div>
         <p class="product-detail-stock" id="productStock"></p>
         <p class="product-detail-description" id="productDescription"></p>
         <dl class="product-detail-specs" id="productSpecs" hidden></dl>
@@ -58,8 +71,8 @@
         <div class="product-detail-price">
           <strong id="productPrice"></strong>
           <del id="productOldPrice" hidden></del>
+          <span class="product-discount" id="productDiscount" hidden></span>
         </div>
-        <p class="product-price-reference" id="productPriceReference" hidden></p>
         <p class="product-pix-note" id="productPixNote">Pagamento via PIX no checkout</p>
 
         <div class="product-buy-row">
@@ -77,6 +90,20 @@
         <button class="btn btn-verde product-add-button" id="productAddButton" type="button">Adicionar ao carrinho</button>
         <p class="product-stock-warning" id="productStockWarning" hidden>Confirme o estoque e atualize as quantidades pelo painel antes de disponibilizar para compra.</p>
 
+        <div class="product-payment-methods" aria-label="Meios de pagamento">
+          <img src="imagens/produtos/BANDERIAS_d37fd9f0-394c-42da-aef3-9a9abdf73e40.png" alt="Pix, boleto e principais bandeiras de cartão">
+          <span>Meios de pagamento disponíveis no checkout</span>
+        </div>
+
+        <form class="product-delivery" id="productDeliveryForm">
+          <label for="productZipCode">Consulte a entrega para seu CEP</label>
+          <div class="product-delivery-controls">
+            <input id="productZipCode" name="cep" inputmode="numeric" autocomplete="postal-code" maxlength="9" placeholder="00000-000" aria-label="CEP de entrega">
+            <button type="submit">Consultar</button>
+          </div>
+          <small id="productDeliveryFeedback">A loja confirma prazo e valor do frete com você.</small>
+        </form>
+
         <div class="product-after-add" id="productAfterAdd" role="status" hidden>
           <strong id="productAddedMessage">Produto adicionado ao carrinho.</strong>
           <a class="btn btn-ouro" href="index.html?carrinho=1#grid">Ir para o carrinho e finalizar</a>
@@ -90,6 +117,432 @@
       </section>
     </div>
 
+    <section class="product-story" id="productStory" hidden aria-labelledby="productStoryTitle">
+      <header class="product-story-intro">
+        <p class="section-kicker">Massageador de joelhos 4 em 1</p>
+        <h2 id="productStoryTitle">Uma pausa de conforto, no seu ritmo</h2>
+        <p>Conheça os recursos do aparelho e veja os detalhes importantes para confirmar antes da compra. As funções e especificações podem variar conforme a versão disponível.</p>
+      </header>
+
+      <section class="product-story-gallery" aria-label="Galeria de imagens e detalhes do massageador">
+        <div class="product-story-gallery-frame">
+          <img id="productStoryImage" src="imagens/produtos/Massageador_eletrico_de_joelho_premium-4.png" alt="Massageador elétrico de joelho, vista do aparelho" decoding="async">
+          <span class="product-story-gallery-count" id="productStoryGalleryCount" aria-live="polite"></span>
+        </div>
+        <p class="product-story-gallery-caption" id="productStoryGalleryCaption"></p>
+        <div class="product-story-gallery-controls">
+          <button type="button" id="productStoryPrevious" aria-label="Ver imagem anterior">←</button>
+          <div class="product-story-gallery-dots" id="productStoryGalleryDots" aria-label="Selecionar imagem"></div>
+          <button type="button" id="productStoryNext" aria-label="Ver próxima imagem">→</button>
+        </div>
+        <p class="product-story-gallery-note">Imagens ilustrativas. Confirme recursos, temperatura e áreas de uso compatíveis com a versão à venda.</p>
+      </section>
+
+      <section class="product-story-functions" aria-labelledby="productStoryFunctionsTitle">
+        <p class="section-kicker">Recursos do aparelho</p>
+        <h3 id="productStoryFunctionsTitle">Funções para uma experiência ajustável</h3>
+        <p>O modelo é apresentado com recursos de compressão de ar, vibração e aquecimento. Consulte o manual e confirme com a loja quais combinações, intensidades e controles acompanham a unidade.</p>
+        <ul class="product-story-function-list">
+          <li><span aria-hidden="true">01</span><div><strong>Compressão de ar</strong><small>Confirme os modos disponíveis na versão à venda.</small></div></li>
+          <li><span aria-hidden="true">02</span><div><strong>Vibração</strong><small>Utilize conforme as instruções do fabricante.</small></div></li>
+          <li><span aria-hidden="true">03</span><div><strong>Aquecimento</strong><small>Verifique ajustes e níveis diretamente com a loja.</small></div></li>
+        </ul>
+      </section>
+
+      <div class="product-story-feature">
+        <img src="imagens/produtos/Massageador_de_joelho_branco_no_sofa-2.png" alt="Massageador de joelho sendo usado sentado" loading="lazy" decoding="async">
+        <div>
+          <p class="section-kicker">No dia a dia</p>
+          <h3>Um aparelho portátil para usar em casa</h3>
+          <p>Reserve um momento tranquilo, ajuste o massageador como indicado no manual e interrompa o uso se sentir desconforto. A imagem é ilustrativa; confirme formato, acabamento e acessórios com a loja.</p>
+        </div>
+      </div>
+
+      <div class="product-story-details">
+        <div>
+          <p class="section-kicker">Informações do modelo</p>
+          <h3>Confira os detalhes da sua versão</h3>
+          <p>As características podem variar conforme a versão. Confirme com a loja se estes dados correspondem ao item que será enviado.</p>
+          <dl class="product-story-specs">
+            <div><dt>Dimensões informadas</dt><dd>20,5 × 15,5 × 17,5 cm</dd></div>
+            <div><dt>Carregamento</dt><dd>USB</dd></div>
+            <div><dt>Tempo de carga informado</dt><dd>De 2 a 3 horas</dd></div>
+            <div><dt>Conteúdo informado</dt><dd>Massageador, cabo USB, manual e caixa</dd></div>
+          </dl>
+        </div>
+        <aside class="product-story-package">
+          <span class="product-story-package-icon" aria-hidden="true">✓</span>
+          <h3>Confirme o conteúdo da embalagem</h3>
+          <p>Antes de finalizar, verifique a versão, os acessórios inclusos, a tensão/carregamento e as instruções de uso com a loja.</p>
+          <a id="productStoryContact" href="#" target="_blank" rel="noreferrer">Tirar dúvidas pelo WhatsApp →</a>
+        </aside>
+      </div>
+
+      <p class="product-story-disclaimer">Produto de bem-estar. Não é dispositivo médico e não substitui avaliação, diagnóstico ou tratamento profissional. Siga o manual do fabricante e interrompa o uso se sentir desconforto.</p>
+    </section>
+
+    <section class="product-story" id="productPillowStory" hidden aria-labelledby="productPillowStoryTitle">
+      <header class="product-story-intro">
+        <p class="section-kicker">Travesseiro Cervical 5 em 1</p>
+        <h2 id="productPillowStoryTitle">Um apoio confortável para sua rotina de descanso</h2>
+        <p>Conheça o formato do travesseiro e veja as imagens do produto em diferentes ângulos. Confira com a loja se o modelo, o tecido, as medidas e os detalhes correspondem à unidade disponível.</p>
+      </header>
+
+      <section class="product-story-gallery" aria-label="Galeria de imagens do travesseiro">
+        <div class="product-story-gallery-frame">
+          <img id="pillowStoryImage" src="imagens/produtos/Travesseiro_borboleta_branco_para_dormir_de_lado-3.png" alt="Travesseiro cervical em formato borboleta" decoding="async">
+          <span class="product-story-gallery-count" id="pillowStoryGalleryCount" aria-live="polite"></span>
+        </div>
+        <p class="product-story-gallery-caption" id="pillowStoryGalleryCaption"></p>
+        <div class="product-story-gallery-controls">
+          <button type="button" id="pillowStoryPrevious" aria-label="Ver imagem anterior">←</button>
+          <div class="product-story-gallery-dots" id="pillowStoryGalleryDots" aria-label="Selecionar imagem"></div>
+          <button type="button" id="pillowStoryNext" aria-label="Ver próxima imagem">→</button>
+        </div>
+        <p class="product-story-gallery-note">Imagens ilustrativas. Confirme cor, composição, dimensões e itens inclusos com a loja antes da compra.</p>
+      </section>
+
+      <section class="product-story-functions" aria-labelledby="pillowStoryFeaturesTitle">
+        <p class="section-kicker">Formato e uso</p>
+        <h3 id="pillowStoryFeaturesTitle">Detalhes que ajudam você a conhecer o modelo</h3>
+        <p>O desenho cervical com recortes laterais foi pensado para acomodar a cabeça em diferentes posições de descanso. A sensação e a altura adequadas variam de pessoa para pessoa.</p>
+        <ul class="product-story-function-list">
+          <li><span aria-hidden="true">01</span><div><strong>Formato cervical</strong><small>Confira se o desenho e a altura atendem à sua preferência.</small></div></li>
+          <li><span aria-hidden="true">02</span><div><strong>Recortes laterais</strong><small>Observe os contornos nas fotos e confirme o acabamento do produto.</small></div></li>
+          <li><span aria-hidden="true">03</span><div><strong>Para sua rotina de descanso</strong><small>Use conforme seu conforto e as instruções do fabricante.</small></div></li>
+        </ul>
+      </section>
+
+      <div class="product-story-details">
+        <div>
+          <p class="section-kicker">Antes de comprar</p>
+          <h3>Confirme os detalhes da versão</h3>
+          <p>As fotos são ilustrativas e podem apresentar variações de cor. Fale com a loja para confirmar composição, dimensões, cuidados de limpeza e disponibilidade.</p>
+        </div>
+        <aside class="product-story-package">
+          <span class="product-story-package-icon" aria-hidden="true">✓</span>
+          <h3>Conteúdo informado</h3>
+          <p>O anúncio apresenta 1 travesseiro. Confirme o conteúdo da embalagem e as condições de entrega com a loja.</p>
+          <a id="pillowStoryContact" href="#" target="_blank" rel="noreferrer">Tirar dúvidas pelo WhatsApp →</a>
+        </aside>
+      </div>
+
+      <p class="product-story-disclaimer">Este produto é um artigo de conforto e não substitui avaliação, diagnóstico ou tratamento profissional. Interrompa o uso se sentir desconforto.</p>
+    </section>
+
+    <section class="product-story" id="productCoccyxStory" hidden aria-labelledby="productCoccyxStoryTitle">
+      <header class="product-story-intro">
+        <p class="section-kicker">Almofada massageadora para assento</p>
+        <h2 id="productCoccyxStoryTitle">Mais conforto para os momentos em que você se senta</h2>
+        <p>Conheça o formato da almofada e os detalhes visíveis do produto. Confirme com a loja as funções, o modo de alimentação e as especificações da versão disponível.</p>
+      </header>
+
+      <section class="product-story-gallery" aria-label="Galeria de imagens da almofada massageadora">
+        <div class="product-story-gallery-frame">
+          <img id="coccyxStoryImage" src="imagens/produtos/almofada-coccix-principal.png" alt="Almofada massageadora para assento, vista do produto" decoding="async">
+          <span class="product-story-gallery-count" id="coccyxStoryGalleryCount" aria-live="polite"></span>
+        </div>
+        <p class="product-story-gallery-caption" id="coccyxStoryGalleryCaption"></p>
+        <div class="product-story-gallery-controls">
+          <button type="button" id="coccyxStoryPrevious" aria-label="Ver imagem anterior">←</button>
+          <div class="product-story-gallery-dots" id="coccyxStoryGalleryDots" aria-label="Selecionar imagem"></div>
+          <button type="button" id="coccyxStoryNext" aria-label="Ver próxima imagem">→</button>
+        </div>
+        <p class="product-story-gallery-note">Imagens ilustrativas. Confirme modelo, controles, alimentação, medidas e itens inclusos com a loja.</p>
+      </section>
+
+      <section class="product-story-functions" aria-labelledby="coccyxStoryFeaturesTitle">
+        <p class="section-kicker">Formato e recursos</p>
+        <h3 id="coccyxStoryFeaturesTitle">Veja os detalhes da almofada</h3>
+        <p>O modelo tem formato para uso sobre assentos e apresenta uma superfície massageadora. Verifique no manual como ligar, ajustar e usar a função, além do tipo de alimentação exigido.</p>
+        <ul class="product-story-function-list">
+          <li><span aria-hidden="true">01</span><div><strong>Formato para assento</strong><small>Confira as dimensões e a compatibilidade com sua cadeira.</small></div></li>
+          <li><span aria-hidden="true">02</span><div><strong>Superfície massageadora</strong><small>Confirme modos, controles e funcionamento da versão disponível.</small></div></li>
+          <li><span aria-hidden="true">03</span><div><strong>Uso em diferentes espaços</strong><small>Consulte as instruções para uso seguro em casa ou no trabalho.</small></div></li>
+        </ul>
+      </section>
+
+      <div class="product-story-details">
+        <div>
+          <p class="section-kicker">Antes de comprar</p>
+          <h3>Confirme as especificações</h3>
+          <p>As imagens são ilustrativas. Fale com a loja para confirmar dimensões, composição, alimentação elétrica, modos, cuidados de limpeza e garantia.</p>
+        </div>
+        <aside class="product-story-package">
+          <span class="product-story-package-icon" aria-hidden="true">✓</span>
+          <h3>Conteúdo da embalagem</h3>
+          <p>Os acessórios e itens inclusos podem variar conforme a versão. Confirme o conteúdo antes de finalizar a compra.</p>
+          <a id="coccyxStoryContact" href="#" target="_blank" rel="noreferrer">Tirar dúvidas pelo WhatsApp →</a>
+        </aside>
+      </div>
+
+      <p class="product-story-disclaimer">Produto de conforto. Não substitui avaliação, diagnóstico ou tratamento profissional. Siga o manual do fabricante e interrompa o uso se sentir desconforto.</p>
+    </section>
+
+    <section class="product-story" id="kneeSupportStory" hidden aria-labelledby="kneeSupportStoryTitle">
+      <header class="product-story-intro">
+        <p class="section-kicker">Joelheira de suporte · par</p>
+        <h2 id="kneeSupportStoryTitle">Suporte para acompanhar seus movimentos</h2>
+        <p>Veja o produto em diferentes ângulos e confira os pontos importantes antes de escolher. Tamanho, ajuste e sensação de suporte variam conforme a pessoa e a versão disponível.</p>
+      </header>
+
+      <section class="product-story-gallery" aria-label="Galeria de imagens das joelheiras de suporte">
+        <div class="product-story-gallery-frame">
+          <img id="kneeSupportStoryImage" src="imagens/produtos/joelheira-suporte-principal.webp" alt="Par de joelheiras pretas de suporte, vista frontal" decoding="async">
+          <span class="product-story-gallery-count" id="kneeSupportStoryGalleryCount" aria-live="polite"></span>
+        </div>
+        <p class="product-story-gallery-caption" id="kneeSupportStoryGalleryCaption"></p>
+        <div class="product-story-gallery-controls">
+          <button type="button" id="kneeSupportStoryPrevious" aria-label="Ver imagem anterior">←</button>
+          <div class="product-story-gallery-dots" id="kneeSupportStoryGalleryDots" aria-label="Selecionar imagem"></div>
+          <button type="button" id="kneeSupportStoryNext" aria-label="Ver próxima imagem">→</button>
+        </div>
+        <p class="product-story-gallery-note">Imagens ilustrativas. Confira o tamanho, o ajuste e os cuidados recomendados para a versão à venda.</p>
+      </section>
+
+      <section class="product-story-functions" aria-labelledby="kneeSupportStoryFeaturesTitle">
+        <p class="section-kicker">Detalhes do produto</p>
+        <h3 id="kneeSupportStoryFeaturesTitle">Conheça a joelheira antes de escolher</h3>
+        <p>O anúncio apresenta um par de joelheiras para uso em fitness e atividades físicas. Consulte a tabela de tamanhos e verifique se o modelo oferece o ajuste que você procura.</p>
+        <ul class="product-story-function-list">
+          <li><span aria-hidden="true">01</span><div><strong>Venda em par</strong><small>Confirme a quantidade de peças incluídas na embalagem.</small></div></li>
+          <li><span aria-hidden="true">02</span><div><strong>Ajuste por tamanho</strong><small>Consulte as medidas e a disponibilidade de cada tamanho.</small></div></li>
+          <li><span aria-hidden="true">03</span><div><strong>Para atividades físicas</strong><small>Use conforme as orientações do fabricante e interrompa se houver desconforto.</small></div></li>
+        </ul>
+      </section>
+
+      <div class="product-story-details">
+        <div>
+          <p class="section-kicker">Antes de comprar</p>
+          <h3>Confira a versão disponível</h3>
+          <p>As imagens são ilustrativas. Confirme composição, medidas, tamanho, instruções de limpeza e condições de troca com a loja.</p>
+        </div>
+        <aside class="product-story-package">
+          <span class="product-story-package-icon" aria-hidden="true">✓</span>
+          <h3>Confirme o conteúdo</h3>
+          <p>Verifique se a embalagem inclui o par e se o tamanho escolhido corresponde à sua necessidade.</p>
+          <a id="kneeSupportStoryContact" href="#" target="_blank" rel="noreferrer">Tirar dúvidas pelo WhatsApp →</a>
+        </aside>
+      </div>
+
+      <p class="product-story-disclaimer">A joelheira é um acessório de suporte para atividade física, não um dispositivo médico. Não substitui orientação profissional; siga as instruções do fabricante e interrompa o uso se sentir desconforto.</p>
+    </section>
+
+    <section class="product-story" id="foldingCushionStory" hidden aria-labelledby="foldingCushionStoryTitle">
+      <header class="product-story-intro">
+        <p class="section-kicker">Almofada funcional · 110 × 50 cm</p>
+        <h2 id="foldingCushionStoryTitle">Conforto dobrável para assento e encosto</h2>
+        <p>Conheça o formato e as variações mostradas nas imagens. A medida total aberta informada no anúncio é de 110 × 50 cm; confirme as dimensões, o tecido e a cor da versão disponível com a loja.</p>
+      </header>
+
+      <section class="product-story-gallery" aria-label="Galeria de imagens da almofada dobrável">
+        <div class="product-story-gallery-frame">
+          <img id="foldingCushionStoryImage" src="imagens/produtos/almofada-dobravel-principal.webp" alt="Almofada dobrável azul com amarras, vista frontal" decoding="async">
+          <span class="product-story-gallery-count" id="foldingCushionStoryGalleryCount" aria-live="polite"></span>
+        </div>
+        <p class="product-story-gallery-caption" id="foldingCushionStoryGalleryCaption"></p>
+        <div class="product-story-gallery-controls">
+          <button type="button" id="foldingCushionStoryPrevious" aria-label="Ver imagem anterior">←</button>
+          <div class="product-story-gallery-dots" id="foldingCushionStoryGalleryDots" aria-label="Selecionar imagem"></div>
+          <button type="button" id="foldingCushionStoryNext" aria-label="Ver próxima imagem">→</button>
+        </div>
+        <p class="product-story-gallery-note">Imagens ilustrativas; as cores exibidas podem variar. Confirme dimensões, materiais e disponibilidade com a loja.</p>
+      </section>
+
+      <section class="product-story-functions" aria-labelledby="foldingCushionStoryFeaturesTitle">
+        <p class="section-kicker">Formato e detalhes</p>
+        <h3 id="foldingCushionStoryFeaturesTitle">Uma peça dobrável com amarras</h3>
+        <p>O modelo mostrado combina uma área para assento e outra para encosto, com amarras para ajudar a posicionar a peça no móvel. Verifique o ajuste no tipo de cadeira ou banco em que pretende usá-la.</p>
+        <ul class="product-story-function-list">
+          <li><span aria-hidden="true">01</span><div><strong>Formato dobrável</strong><small>Confira nas fotos como a almofada se posiciona no assento e no encosto.</small></div></li>
+          <li><span aria-hidden="true">02</span><div><strong>Amarras integradas</strong><small>Verifique a posição e o comprimento das amarras na versão disponível.</small></div></li>
+          <li><span aria-hidden="true">03</span><div><strong>Medida total de 110 × 50 cm</strong><small>Medida informada pelo anúncio com a peça aberta; confirme antes da compra.</small></div></li>
+        </ul>
+      </section>
+
+      <div class="product-story-details">
+        <div>
+          <p class="section-kicker">Antes de comprar</p>
+          <h3>Confira sua versão</h3>
+          <p>As fotos apresentam variações de cor. Consulte a loja sobre materiais, dimensões, limpeza e opções disponíveis.</p>
+        </div>
+        <aside class="product-story-package">
+          <span class="product-story-package-icon" aria-hidden="true">✓</span>
+          <h3>Confirme os detalhes</h3>
+          <p>Verifique a cor escolhida, as dimensões e o conteúdo da embalagem antes de finalizar.</p>
+          <a id="foldingCushionStoryContact" href="#" target="_blank" rel="noreferrer">Tirar dúvidas pelo WhatsApp →</a>
+        </aside>
+      </div>
+
+      <p class="product-story-disclaimer">Artigo de conforto para uso em assentos. Não substitui orientação profissional; interrompa o uso se sentir desconforto.</p>
+    </section>
+
+    <section class="product-story" id="lumbarSupportStory" hidden aria-labelledby="lumbarSupportStoryTitle">
+      <header class="product-story-intro">
+        <p class="section-kicker">Colete de suporte lombar</p>
+        <h2 id="lumbarSupportStoryTitle">Conheça o formato e os detalhes do colete</h2>
+        <p>Veja o colete em diferentes ângulos e confira os detalhes do modelo. Consulte a loja sobre tamanho, materiais, ajuste e conteúdo da embalagem antes da compra.</p>
+      </header>
+
+      <section class="product-story-gallery" aria-label="Galeria de imagens do colete lombar">
+        <div class="product-story-gallery-frame">
+          <img id="lumbarSupportStoryImage" src="imagens/produtos/colete-lombar-principal.png" alt="Colete lombar preto visto pela parte de trás" decoding="async">
+          <span class="product-story-gallery-count" id="lumbarSupportStoryGalleryCount" aria-live="polite"></span>
+        </div>
+        <p class="product-story-gallery-caption" id="lumbarSupportStoryGalleryCaption"></p>
+        <div class="product-story-gallery-controls">
+          <button type="button" id="lumbarSupportStoryPrevious" aria-label="Ver imagem anterior">←</button>
+          <div class="product-story-gallery-dots" id="lumbarSupportStoryGalleryDots" aria-label="Selecionar imagem"></div>
+          <button type="button" id="lumbarSupportStoryNext" aria-label="Ver próxima imagem">→</button>
+        </div>
+        <p class="product-story-gallery-note">Imagens ilustrativas. Confirme composição, tamanho, ajuste e especificações com a loja.</p>
+      </section>
+
+      <section class="product-story-functions" aria-labelledby="lumbarSupportStoryFeaturesTitle">
+        <p class="section-kicker">Detalhes do modelo</p>
+        <h3 id="lumbarSupportStoryFeaturesTitle">Fechamento ajustável e estrutura de suporte</h3>
+        <p>O anúncio apresenta um colete com fechamento aderente e alças laterais. O ajuste correto depende do tamanho e das necessidades individuais; confirme a forma de uso com um profissional habilitado.</p>
+        <ul class="product-story-function-list">
+          <li><span aria-hidden="true">01</span><div><strong>Fechamento aderente</strong><small>Verifique as instruções de ajuste para o modelo disponível.</small></div></li>
+          <li><span aria-hidden="true">02</span><div><strong>Alças laterais</strong><small>Observe o posicionamento nas imagens e confirme os detalhes com a loja.</small></div></li>
+          <li><span aria-hidden="true">03</span><div><strong>Escolha do tamanho</strong><small>Consulte medidas e disponibilidade antes de finalizar a compra.</small></div></li>
+        </ul>
+      </section>
+
+      <div class="product-story-details">
+        <div>
+          <p class="section-kicker">Antes de comprar</p>
+          <h3>Confirme as especificações</h3>
+          <p>Verifique tamanho, composição, cuidados de limpeza, garantia e conteúdo da embalagem com a loja. Se pretende usar por recomendação clínica, confirme o ajuste e a utilização com o profissional que acompanha você.</p>
+        </div>
+        <aside class="product-story-package">
+          <span class="product-story-package-icon" aria-hidden="true">✓</span>
+          <h3>Conteúdo informado</h3>
+          <p>O anúncio de referência informa um colete e manual. Confirme os itens inclusos e a versão antes de comprar.</p>
+          <a id="lumbarSupportStoryContact" href="#" target="_blank" rel="noreferrer">Tirar dúvidas pelo WhatsApp →</a>
+        </aside>
+      </div>
+
+      <p class="product-story-disclaimer">Este produto não substitui avaliação, diagnóstico ou orientação de profissional de saúde. Siga as instruções do fabricante e do profissional responsável; interrompa o uso se sentir desconforto ou irritação.</p>
+    </section>
+
+    <section class="product-story" id="infraredLampStory" hidden aria-labelledby="infraredLampStoryTitle">
+      <header class="product-story-intro">
+        <p class="section-kicker">Aparelho de infravermelho</p>
+        <h2 id="infraredLampStoryTitle">Um aparelho de calor para sua rotina de bem-estar</h2>
+        <p>Conheça o aparelho em diferentes ângulos e confira os detalhes antes da compra. Consulte a loja para confirmar ajustes, dimensões, alimentação e instruções de uso da versão disponível.</p>
+      </header>
+
+      <section class="product-story-gallery" aria-label="Galeria de imagens do aparelho de infravermelho">
+        <div class="product-story-gallery-frame">
+          <img id="infraredLampStoryImage" src="imagens/produtos/infravermelho-lampada-principal.png" alt="Lâmpada de infravermelho em tripé ao lado de uma pessoa sentada" decoding="async">
+          <span class="product-story-gallery-count" id="infraredLampStoryGalleryCount" aria-live="polite"></span>
+        </div>
+        <p class="product-story-gallery-caption" id="infraredLampStoryGalleryCaption"></p>
+        <div class="product-story-gallery-controls">
+          <button type="button" id="infraredLampStoryPrevious" aria-label="Ver imagem anterior">←</button>
+          <div class="product-story-gallery-dots" id="infraredLampStoryGalleryDots" aria-label="Selecionar imagem"></div>
+          <button type="button" id="infraredLampStoryNext" aria-label="Ver próxima imagem">→</button>
+        </div>
+        <p class="product-story-gallery-note">Imagens ilustrativas. Confirme temperatura, controles, montagem e itens inclusos com a loja.</p>
+      </section>
+
+      <section class="product-story-functions" aria-labelledby="infraredLampStoryFeaturesTitle">
+        <p class="section-kicker">Detalhes do aparelho</p>
+        <h3 id="infraredLampStoryFeaturesTitle">Confira os recursos da versão disponível</h3>
+        <p>O anúncio apresenta um aparelho com lâmpada de infravermelho e ajustes de temperatura. Verifique potência, níveis, distância recomendada e tempo de uso no manual do fabricante.</p>
+        <ul class="product-story-function-list">
+          <li><span aria-hidden="true">01</span><div><strong>Estrutura com tripé</strong><small>Confirme se o suporte, a base e os acessórios mostrados estão inclusos.</small></div></li>
+          <li><span aria-hidden="true">02</span><div><strong>Ajustes de temperatura</strong><small>Consulte no manual os controles, limites e orientações para cada nível.</small></div></li>
+          <li><span aria-hidden="true">03</span><div><strong>Uso conforme instruções</strong><small>Observe os cuidados, a distância e o tempo de exposição recomendados pelo fabricante.</small></div></li>
+        </ul>
+      </section>
+
+      <div class="product-story-details">
+        <div>
+          <p class="section-kicker">Antes de comprar</p>
+          <h3>Confirme as especificações</h3>
+          <p>Verifique dimensões, potência, compatibilidade elétrica, montagem, garantia e conteúdo da embalagem com a loja. Evite olhar diretamente para a fonte de luz e siga as instruções de segurança do fabricante.</p>
+        </div>
+        <aside class="product-story-package">
+          <span class="product-story-package-icon" aria-hidden="true">✓</span>
+          <h3>Confira os itens inclusos</h3>
+          <p>Confirme se o aparelho, o tripé e os acessórios mostrados fazem parte da versão que será enviada.</p>
+          <a id="infraredLampStoryContact" href="#" target="_blank" rel="noreferrer">Tirar dúvidas pelo WhatsApp →</a>
+        </aside>
+      </div>
+
+      <p class="product-story-disclaimer">Este aparelho não deve ser considerado tratamento médico nem substitui avaliação ou orientação profissional. O calor e a luz podem causar lesões se usados incorretamente; siga o manual e procure orientação profissional antes do uso, especialmente em caso de condição de saúde.</p>
+    </section>
+
+    <section class="product-story" id="referenceProductStory" hidden aria-labelledby="referenceProductStoryTitle">
+      <header class="product-story-intro">
+        <p class="section-kicker" id="referenceProductStoryKicker"></p>
+        <h2 id="referenceProductStoryTitle"></h2>
+        <p id="referenceProductStoryIntro"></p>
+      </header>
+
+      <section class="product-story-gallery" id="referenceProductStoryGallery" aria-label="Galeria de imagens do produto">
+        <div class="product-story-gallery-frame">
+          <img id="referenceProductStoryImage" alt="" decoding="async">
+          <span class="product-story-gallery-count" id="referenceProductStoryGalleryCount" aria-live="polite"></span>
+        </div>
+        <p class="product-story-gallery-caption" id="referenceProductStoryGalleryCaption"></p>
+        <div class="product-story-gallery-controls">
+          <button type="button" id="referenceProductStoryPrevious" aria-label="Ver imagem anterior">←</button>
+          <div class="product-story-gallery-dots" id="referenceProductStoryGalleryDots" aria-label="Selecionar imagem"></div>
+          <button type="button" id="referenceProductStoryNext" aria-label="Ver próxima imagem">→</button>
+        </div>
+        <p class="product-story-gallery-note" id="referenceProductStoryGalleryNote"></p>
+      </section>
+
+      <section class="product-story-functions" aria-labelledby="referenceProductStoryFeaturesTitle">
+        <p class="section-kicker">Detalhes do produto</p>
+        <h3 id="referenceProductStoryFeaturesTitle"></h3>
+        <p id="referenceProductStoryFeaturesIntro"></p>
+        <ul class="product-story-function-list" id="referenceProductStoryFeatureList"></ul>
+      </section>
+
+      <div class="product-story-details">
+        <div>
+          <p class="section-kicker">Antes de comprar</p>
+          <h3 id="referenceProductStoryBeforeTitle"></h3>
+          <p id="referenceProductStoryBeforeText"></p>
+        </div>
+        <aside class="product-story-package">
+          <span class="product-story-package-icon" aria-hidden="true">✓</span>
+          <h3 id="referenceProductStoryPackageTitle"></h3>
+          <p id="referenceProductStoryPackageText"></p>
+          <a id="referenceProductStoryContact" href="#" target="_blank" rel="noreferrer">Tirar dúvidas pelo WhatsApp →</a>
+        </aside>
+      </div>
+
+      <p class="product-story-disclaimer" id="referenceProductStoryDisclaimer"></p>
+    </section>
+
+    <section class="product-reviews" id="productReviews" hidden aria-labelledby="productReviewsTitle">
+      <div class="product-reviews-heading">
+        <div>
+          <p class="product-detail-category">Experi&ecirc;ncias de clientes</p>
+          <h2 id="productReviewsTitle">Avalia&ccedil;&otilde;es do produto</h2>
+          <p class="product-reviews-summary" id="productReviewsSummary">Publicaremos aqui as opiniões reais dos clientes.</p>
+        </div>
+        <a class="product-review-write" id="productReviewContact" href="#" target="_blank" rel="noreferrer">Escrever uma avaliação</a>
+      </div>
+      <div class="product-reviews-overview" id="productReviewsOverview" hidden>
+        <div class="product-reviews-score">
+          <strong id="productReviewsAverage"></strong>
+          <span class="product-review-stars" id="productReviewsStars" aria-label="Nota média"></span>
+          <small id="productReviewsCount"></small>
+        </div>
+        <div class="product-reviews-distribution" id="productReviewsDistribution" aria-label="Distribuição das notas"></div>
+      </div>
+      <div class="product-review-grid" id="productReviewGrid"></div>
+      <p class="product-review-empty" id="productReviewEmpty" hidden>
+        Ainda não há avaliações publicadas. Se já comprou, conte sua experiência à loja pelo botão acima.
+      </p>
+    </section>
+
     <section id="productNotFound" class="product-not-found" hidden>
       <span aria-hidden="true">🛍️</span>
       <h1>Não encontramos esse produto</h1>
@@ -101,7 +554,7 @@
   <footer class="rodape product-footer">
     <div class="product-footer-inner">
       <a href="index.html" class="product-footer-brand">
-        <img id="productFooterLogo" src="imagens/logo-pc-exclusivas.svg" alt="P&amp;C Almofadas Exclusivas">
+        <img id="productFooterLogo" src="imagens/logo-pc-horizontal.png" alt="P&amp;C Almofadas Exclusivas" width="1360" height="428">
         <span id="productFooterName" class="visually-hidden">P&amp;C Almofadas Exclusivas</span>
       </a>
       <div class="product-footer-details">

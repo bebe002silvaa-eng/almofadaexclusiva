@@ -1,7 +1,9 @@
 const STORAGE_LOJA = "mineironet_loja";
-const AUTH = "mineironet_admin_ok";
 
 let estado = window.carregarLojaConfigurada();
+let pedidosAdmin = [];
+let estoqueAdmin = [];
+const estoqueBase = new Map();
 
 function salvar() {
   localStorage.setItem(STORAGE_LOJA, JSON.stringify(estado));
@@ -41,37 +43,86 @@ function fileParaDataUrl(file) {
   });
 }
 
-function renderLogin() {
+function renderLogin(mensagem = "") {
   document.getElementById("app").innerHTML = `
     <div class="login">
       <h1>Painel da loja</h1>
-      <p>Senha padrão: <strong>mineiro123</strong></p>
-      <label>Senha</label>
-      <input type="password" id="senha">
-      <button class="btn btn-verde" id="entrar">Entrar</button>
+      <p>Acesso exclusivo ao proprietário da loja.</p>
+      <form id="loginForm">
+        <label for="senha">Senha do administrador</label>
+        <input type="password" id="senha" autocomplete="current-password" required>
+        <button class="btn btn-verde" id="entrar" type="submit">Entrar</button>
+      </form>
+      <p id="loginStatus" role="status">${escaparHTML(mensagem)}</p>
     </div>`;
-  document.getElementById("entrar").onclick = async () => {
-    if (document.getElementById("senha").value !== estado.senhaAdmin) {
-      alert("Senha incorreta.");
-      return;
+  document.getElementById("loginForm").onsubmit = async (event) => {
+    event.preventDefault();
+    const botao = document.getElementById("entrar");
+    const status = document.getElementById("loginStatus");
+    botao.disabled = true;
+    status.textContent = "Verificando acesso...";
+    try {
+      const response = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: document.getElementById("senha").value })
+      });
+      const resultado = await response.json();
+      if (!response.ok) throw new Error(resultado.error || `O servidor respondeu ${response.status}.`);
+      estado = await window.carregarLojaRemota();
+      renderPainel();
+    } catch (erro) {
+      status.textContent = `Não foi possível entrar: ${erro.message}`;
+      botao.disabled = false;
     }
-    sessionStorage.setItem(AUTH, "1");
-    estado = await window.carregarLojaRemota();
-    renderPainel();
   };
 }
 
 function renderPainel() {
+  estoqueBase.clear();
+  estado.produtos.forEach((produto) => estoqueBase.set(String(produto.id), Number(produto.estoque) || 0));
   document.getElementById("app").innerHTML = `
     <div class="painel">
       <div class="topo">
         <h1>Editar loja</h1>
         <div>
           <a class="btn btn-ghost" href="index.html">Ver loja</a>
+          <button class="btn btn-ghost" id="sairPainel" type="button">Sair</button>
           <button class="btn btn-ghost" id="resetar">Restaurar padrão</button>
         </div>
       </div>
       <p class="aviso">O catálogo inicial usa imagens ilustrativas e preços de referência. Confirme os preços e o estoque reais antes de vender. Envie JPG, PNG ou WebP para logo, banner e produtos; você pode cadastrar várias fotos por produto.</p>
+
+      <section class="admin-orders" aria-labelledby="ordersTitle">
+        <div class="admin-section-heading">
+          <div><h2 id="ordersTitle">Pedidos, vendas e estoque</h2><p>Pedidos e reservas sincronizados com o servidor.</p></div>
+          <button class="btn btn-ghost" id="atualizarPedidos" type="button">Atualizar painel</button>
+        </div>
+        <div id="orderMetrics" class="order-metrics" aria-live="polite"></div>
+        <div class="orders-toolbar">
+          <label for="filtroStatusPedido">Status
+            <select id="filtroStatusPedido">
+              <option value="">Todos os pedidos</option>
+              <option value="AWAITING_PAYMENT">Aguardando pagamento</option>
+              <option value="PAYMENT_REPORTED">Pagamento informado</option>
+              <option value="GATEWAY_REVIEW">Revisão do gateway</option>
+              <option value="PAID">Pago</option>
+              <option value="SHIPPED">Enviado</option>
+              <option value="DELIVERED">Entregue</option>
+              <option value="EXPIRED">Expirado</option>
+              <option value="CANCELLED">Cancelado</option>
+              <option value="REFUNDED">Estornado</option>
+            </select>
+          </label>
+          <label for="buscarPedido">Buscar pedido
+            <input id="buscarPedido" type="search" placeholder="Número, cliente ou produto">
+          </label>
+        </div>
+        <p id="ordersStatus" class="orders-status" role="status">Carregando pedidos...</p>
+        <div id="listaPedidos" class="order-list"></div>
+        <div class="inventory-heading"><h3>Estoque rápido</h3><p>As alterações usam o estoque atual do servidor para evitar sobrescrever vendas simultâneas.</p></div>
+        <div id="listaEstoque" class="inventory-list"></div>
+      </section>
 
       <h2>Identidade e fotos da loja</h2>
       <div class="grid2">
@@ -85,7 +136,6 @@ function renderPainel() {
           <label>E-mail<input id="loja_email" value="${estado.loja.email}"></label>
           <label>Endereço comercial<textarea id="loja_endereco" rows="5">${escaparHTML(estado.loja.endereco)}</textarea></label>
           <label>Horário<input id="loja_horario" value="${estado.loja.horario}"></label>
-          <label>Senha do painel<input id="senhaAdminCampo" value="${estado.senhaAdmin}"></label>
         </div>
         <div>
           <p>Logo atual</p>
@@ -179,6 +229,16 @@ function renderPainel() {
     estado.loja.banner = await fileParaDataUrl(e.target.files[0]);
     document.getElementById("prevBanner").src = estado.loja.banner;
   };
+  document.getElementById("sairPainel").onclick = async () => {
+    try {
+      const response = await fetch("/api/admin/logout", { method: "POST" });
+      const resultado = await response.json();
+      if (!response.ok) throw new Error(resultado.error || `O servidor respondeu ${response.status}.`);
+      renderLogin("Você saiu do painel.");
+    } catch (erro) {
+      alert(`Não foi possível encerrar a sessão: ${erro.message}`);
+    }
+  };
   document.getElementById("novoProduto").onclick = () => {
     lerCamposLoja();
     estado.produtos.unshift({
@@ -228,6 +288,14 @@ function renderPainel() {
       document.getElementById("pix_chave").focus();
       return;
     }
+    const stockChanges = estado.produtos.flatMap((produto) => {
+      const id = String(produto.id);
+      const expectedStock = estoqueBase.get(id);
+      const stock = Number(produto.estoque);
+      return Number.isInteger(expectedStock) && expectedStock !== stock
+        ? [{ id, stock, expectedStock }]
+        : [];
+    });
     try {
       salvar();
     } catch (erro) {
@@ -238,11 +306,12 @@ function renderPainel() {
       return;
     }
     try {
-      const sincronizado = await sincronizarLojaComServidor();
+      const sincronizado = await sincronizarLojaComServidor(stockChanges);
       if (sincronizado === false) {
         alert("As alterações foram salvas neste navegador, mas não no servidor. Para publicar os produtos e ativar pagamentos, execute o servidor da loja e sincronize novamente.");
         return;
       }
+      await carregarPedidosAdmin();
     } catch (erro) {
       alert(`As alterações ficaram salvas apenas neste navegador. Não foi possível sincronizar o servidor: ${erro.message}`);
       return;
@@ -253,6 +322,11 @@ function renderPainel() {
   };
   document.getElementById("gerarPixPreview").onclick = gerarPixPreview;
   document.getElementById("buscarProduto").addEventListener("input", filtrarProdutos);
+  document.getElementById("atualizarPedidos").onclick = carregarPedidosAdmin;
+  document.getElementById("filtroStatusPedido").addEventListener("change", renderPedidosAdmin);
+  document.getElementById("buscarPedido").addEventListener("input", renderPedidosAdmin);
+  document.getElementById("listaPedidos").addEventListener("click", agirNoPedido);
+  document.getElementById("listaEstoque").addEventListener("click", alterarEstoqueRapido);
   document.querySelectorAll('input[name="metodoPagamento"]').forEach((radio) => {
     radio.addEventListener("change", atualizarConfiguracaoPagamento);
   });
@@ -264,6 +338,307 @@ function renderPainel() {
     renderPainel();
   };
   renderProdutos();
+  carregarPedidosAdmin();
+}
+
+const rotulosStatusPedido = {
+  AWAITING_PAYMENT: "Aguardando pagamento",
+  PAYMENT_REPORTED: "Pagamento informado",
+  GATEWAY_REVIEW: "Revisão do gateway",
+  PAID: "Pago",
+  SHIPPED: "Enviado",
+  DELIVERED: "Entregue",
+  EXPIRED: "Expirado",
+  CANCELLED: "Cancelado",
+  REFUNDED: "Estornado"
+};
+
+function dataPedido(valor) {
+  const data = new Date(Number(valor) * 1000);
+  return Number.isNaN(data.getTime()) ? "Data indisponível" : data.toLocaleString("pt-BR");
+}
+
+function valorPedido(valorCentavos) {
+  return dinheiroAdmin(Number(valorCentavos) / 100);
+}
+
+async function carregarPedidosAdmin() {
+  const status = document.getElementById("ordersStatus");
+  if (status) status.textContent = "Atualizando pedidos e estoque...";
+  const botao = document.getElementById("atualizarPedidos");
+  if (botao) botao.disabled = true;
+  try {
+    const response = await fetch("/api/admin/orders", { cache: "no-store" });
+    const resultado = await response.json();
+    if (response.status === 401) {
+      renderLogin(resultado.error || "Sua sessão expirou. Entre novamente.");
+      return;
+    }
+    if (!response.ok) throw new Error(resultado.error || `O servidor respondeu ${response.status}.`);
+    pedidosAdmin = Array.isArray(resultado.orders) ? resultado.orders : [];
+    estoqueAdmin = Array.isArray(resultado.inventory) ? resultado.inventory : [];
+    const erroCopiaLocal = sincronizarEstoqueLocal(estoqueAdmin);
+    renderResumoPedidos();
+    renderPedidosAdmin();
+    renderEstoqueAdmin();
+    if (status) {
+      status.textContent = `${pedidosAdmin.length} pedido(s) carregado(s).${erroCopiaLocal ? ` O servidor está atualizado, mas não foi possível guardar a cópia local: ${erroCopiaLocal}` : ""}`;
+    }
+  } catch (erro) {
+    if (status) status.textContent = `Não foi possível carregar os pedidos: ${erro.message}`;
+  } finally {
+    if (botao && document.contains(botao)) botao.disabled = false;
+  }
+}
+
+function sincronizarEstoqueLocal(inventario) {
+  inventario.forEach((entrada) => {
+    const indice = estado.produtos.findIndex((item) => String(item.id) === String(entrada.id));
+    const produto = estado.produtos[indice];
+    if (!produto) return;
+    const estoque = Number(entrada.stock);
+    if (!Number.isInteger(estoque) || estoque < 0) return;
+    const input = document.querySelector(`[data-p="${indice}"][data-k="estoque"]`);
+    const estoqueAnterior = estoqueBase.get(String(produto.id));
+    const valorEditado = Number(input?.value);
+    const temAlteracaoPendente = Number.isInteger(estoqueAnterior) && Number.isInteger(valorEditado) && valorEditado !== estoqueAnterior;
+    produto.estoque = temAlteracaoPendente ? valorEditado : estoque;
+    if (input && !temAlteracaoPendente) input.value = String(estoque);
+    const resumo = document.querySelector(`[data-product-card="${indice}"] [data-summary-stock]`);
+    if (resumo && !temAlteracaoPendente) resumo.textContent = `${estoque} em estoque`;
+    estoqueBase.set(String(produto.id), estoque);
+  });
+  try {
+    salvar();
+    return "";
+  } catch (erro) {
+    console.error("Não foi possível atualizar a cópia local do estoque.", erro);
+    return erro.message || "falha de armazenamento";
+  }
+}
+
+function renderResumoPedidos() {
+  const container = document.getElementById("orderMetrics");
+  if (!container) return;
+  const finalizados = pedidosAdmin.filter((pedido) => ["PAID", "SHIPPED", "DELIVERED"].includes(pedido.status));
+  const pendentes = pedidosAdmin.filter((pedido) => ["AWAITING_PAYMENT", "PAYMENT_REPORTED", "GATEWAY_REVIEW"].includes(pedido.status));
+  const receita = finalizados.reduce((soma, pedido) => soma + Number(pedido.amountCents || 0), 0);
+  const unidadesVendidas = finalizados.reduce(
+    (soma, pedido) => soma + (Array.isArray(pedido.items) ? pedido.items.reduce((subtotal, item) => subtotal + Number(item.quantity || 0), 0) : 0),
+    0
+  );
+  container.innerHTML = `
+    <article><span>Vendas confirmadas</span><strong>${finalizados.length}</strong><small>${unidadesVendidas} unidade(s) vendida(s)</small></article>
+    <article><span>Valor confirmado</span><strong>${valorPedido(receita)}</strong><small>Pedidos pagos, enviados ou entregues</small></article>
+    <article><span>Pedidos pendentes</span><strong>${pendentes.length}</strong><small>Inclui reservas aguardando ação</small></article>
+    <article><span>Pedidos registrados</span><strong>${pedidosAdmin.length}</strong><small>Histórico central da loja</small></article>`;
+}
+
+function renderPedidosAdmin() {
+  const container = document.getElementById("listaPedidos");
+  if (!container) return;
+  const filtro = document.getElementById("filtroStatusPedido").value;
+  const termo = document.getElementById("buscarPedido").value.trim().toLocaleLowerCase("pt-BR");
+  const filtrados = pedidosAdmin.filter((pedido) => {
+    if (filtro && pedido.status !== filtro) return false;
+    const palavras = [
+      pedido.id,
+      pedido.customer?.name,
+      pedido.customer?.email,
+      pedido.customer?.phone,
+      ...(pedido.items || []).map((item) => item.name)
+    ].join(" ").toLocaleLowerCase("pt-BR");
+    return palavras.includes(termo);
+  });
+  if (!filtrados.length) {
+    container.innerHTML = '<p class="orders-empty">Nenhum pedido corresponde ao filtro.</p>';
+    return;
+  }
+  container.innerHTML = filtrados.map((pedido) => {
+    const customer = pedido.customer || {};
+    const shipping = customer.shipping || {};
+    const itens = Array.isArray(pedido.items) ? pedido.items : [];
+    const statusClass = String(pedido.status || "").toLowerCase().replace(/[^a-z_]/g, "");
+    const endereco = [shipping.street, shipping.number, shipping.complement, shipping.neighborhood, shipping.city, shipping.state, shipping.zipCode]
+      .filter(Boolean).join(", ");
+    const reservaEstoque = pedido.status === "AWAITING_PAYMENT" && pedido.paymentMethod === "manual_pix"
+      ? `Estoque reservado até ${dataPedido(pedido.expiresAt)}`
+      : pedido.status === "PAYMENT_REPORTED"
+        ? "Reserva mantida enquanto a loja confere o pagamento"
+        : pedido.status === "EXPIRED" || pedido.status === "CANCELLED"
+          ? "Reserva de estoque liberada"
+          : ["PAID", "SHIPPED", "DELIVERED"].includes(pedido.status)
+            ? "Unidades baixadas do estoque"
+            : pedido.inventoryReserved
+              ? "Estoque reservado durante a cobrança"
+              : "";
+    const acoes = [];
+    if (["AWAITING_PAYMENT", "PAYMENT_REPORTED"].includes(pedido.status) && pedido.paymentMethod === "manual_pix") {
+      acoes.push('<button class="btn btn-small btn-confirm" data-order-action="confirm_payment" type="button">Confirmar após conferir</button>');
+      acoes.push('<button class="btn btn-small btn-cancel" data-order-action="cancel" type="button">Cancelar e liberar estoque</button>');
+    }
+    if (pedido.status === "EXPIRED" && pedido.paymentMethod === "manual_pix") {
+      acoes.push('<button class="btn btn-small btn-confirm" data-order-action="confirm_payment" type="button">Confirmar pagamento tardio</button>');
+    }
+    if (pedido.status === "GATEWAY_REVIEW") {
+      if (pedido.transactionId) acoes.push('<button class="btn btn-small" data-order-action="check_gateway" type="button">Consultar gateway</button>');
+      acoes.push('<button class="btn btn-small btn-confirm" data-order-action="confirm_payment" type="button">Confirmar após conferência</button>');
+      acoes.push('<button class="btn btn-small btn-cancel" data-order-action="cancel_gateway_review" type="button">Cancelar e liberar estoque</button>');
+    } else if (pedido.paymentMethod === "blackcat" && pedido.status === "AWAITING_PAYMENT") {
+      acoes.push('<button class="btn btn-small" data-order-action="check_gateway" type="button">Consultar gateway</button>');
+    }
+    if (pedido.status === "PAID") acoes.push('<button class="btn btn-small btn-confirm" data-order-action="mark_shipped" type="button">Marcar como enviado</button>');
+    if (pedido.status === "SHIPPED") acoes.push('<button class="btn btn-small btn-confirm" data-order-action="mark_delivered" type="button">Marcar como entregue</button>');
+    const historico = Array.isArray(pedido.history) ? pedido.history : [];
+    return `
+      <article class="order-card">
+        <header class="order-card-heading">
+          <div><strong>Pedido ${esc(pedido.id)}</strong><small>${dataPedido(pedido.createdAt)}</small></div>
+          <span class="order-status status-${statusClass}">${esc(rotulosStatusPedido[pedido.status] || pedido.status || "Status indisponível")}</span>
+        </header>
+        <div class="order-card-grid">
+          <section><h4>Cliente e entrega</h4>
+            <p><strong>${esc(customer.name || "Sem nome")}</strong></p>
+            <p>${esc(customer.phone || "Sem telefone")}${customer.email ? ` · ${esc(customer.email)}` : ""}</p>
+            <p>${esc(endereco || "Endereço indisponível")}</p>
+          </section>
+          <section><h4>Pagamento</h4>
+            <p>${pedido.paymentMethod === "blackcat" ? "BlackCat" : "PIX manual"} · ${esc(pedido.paymentStatus || "PENDING")}</p>
+            ${pedido.transactionId ? `<p>Transação: ${esc(pedido.transactionId)}</p>` : ""}
+            ${reservaEstoque ? `<p>${esc(reservaEstoque)}</p>` : ""}
+            <p class="order-total">${valorPedido(pedido.amountCents)}</p>
+          </section>
+        </div>
+        <div class="order-items">
+          <h4>Produtos</h4>
+          ${itens.map((item) => `<p>${Number(item.quantity) || 0} × ${esc(item.name || "Produto")} <span>${valorPedido(item.lineTotalCents)}</span></p>`).join("")}
+        </div>
+        <details class="order-history"><summary>Histórico do pedido (${historico.length})</summary>
+          ${historico.length ? historico.map((evento) => `<p>${esc(rotulosStatusPedido[evento.event] || evento.event)} · ${dataPedido(evento.at)}</p>`).join("") : "<p>Sem eventos registrados.</p>"}
+        </details>
+        ${acoes.length ? `<div class="order-actions" data-order-id="${esc(pedido.id)}">${acoes.join("")}</div>` : ""}
+      </article>`;
+  }).join("");
+}
+
+function renderEstoqueAdmin() {
+  const container = document.getElementById("listaEstoque");
+  if (!container) return;
+  const vendidos = new Map();
+  pedidosAdmin.filter((pedido) => ["PAID", "SHIPPED", "DELIVERED"].includes(pedido.status)).forEach((pedido) => {
+    (pedido.items || []).forEach((item) => {
+      const id = String(item.productId);
+      vendidos.set(id, (vendidos.get(id) || 0) + Number(item.quantity || 0));
+    });
+  });
+  const produtos = estado.produtos.slice().sort((a, b) => String(a.nome).localeCompare(String(b.nome), "pt-BR"));
+  if (!produtos.length) {
+    container.innerHTML = '<p class="orders-empty">Não há produtos cadastrados.</p>';
+    return;
+  }
+  container.innerHTML = produtos.map((produto) => {
+    const estoque = Number(produto.estoque) || 0;
+    return `<div class="inventory-row">
+      <div><strong>${esc(produto.nome)}</strong><small>${Number(vendidos.get(String(produto.id)) || 0)} unidade(s) vendida(s)</small></div>
+      <label>Estoque<input type="number" min="0" step="1" value="${estoque}" data-stock-input="${esc(produto.id)}" aria-label="Novo estoque de ${esc(produto.nome)}"></label>
+      <button class="btn btn-small" data-stock-save="${esc(produto.id)}" type="button">Atualizar</button>
+    </div>`;
+  }).join("");
+}
+
+async function agirNoPedido(event) {
+  const botao = event.target.closest("[data-order-action]");
+  if (!botao) return;
+  const order = pedidosAdmin.find((pedido) => pedido.id === botao.closest("[data-order-id]")?.dataset.orderId);
+  if (!order) return;
+  const action = botao.dataset.orderAction;
+  if (action === "check_gateway") {
+    if (!order.transactionId) {
+      alert("A cobrança não tem um identificador confirmado. Confira o painel da BlackCat antes de agir.");
+      return;
+    }
+    botao.disabled = true;
+    try {
+      const response = await fetch(`/api/payments/${encodeURIComponent(order.transactionId)}`, { cache: "no-store" });
+      const resultado = await response.json();
+      if (!response.ok || !resultado.success) throw new Error(resultado.error || `O servidor respondeu ${response.status}.`);
+      alert(`Status confirmado pela BlackCat: ${resultado.data.status}.`);
+      await carregarPedidosAdmin();
+    } catch (erro) {
+      alert(`Não foi possível consultar a cobrança: ${erro.message}`);
+      botao.disabled = false;
+    }
+    return;
+  }
+  const mensagens = {
+    confirm_payment: order.status === "EXPIRED"
+      ? "Confirme somente após verificar o crédito no extrato. O estoque será reservado novamente e a ação falhará se não houver unidades disponíveis."
+      : "Confirme somente depois de conferir o crédito no extrato bancário. O pedido será registrado como venda paga.",
+    cancel: "Cancelar este pedido e devolver as unidades reservadas ao estoque?",
+    cancel_gateway_review: "Só cancele se confirmou na BlackCat que a cobrança não foi paga. O estoque reservado será liberado.",
+    mark_shipped: "Marcar este pedido pago como enviado?",
+    mark_delivered: "Marcar este pedido enviado como entregue?"
+  };
+  if (!confirm(mensagens[action] || "Confirmar esta ação?")) return;
+  botao.disabled = true;
+  try {
+    const response = await fetch(`/api/admin/orders/${encodeURIComponent(order.id)}/action`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action })
+    });
+    const resultado = await response.json();
+    if (response.status === 401) {
+      renderLogin(resultado.error || "Sua sessão expirou. Entre novamente.");
+      return;
+    }
+    if (!response.ok || !resultado.success) throw new Error(resultado.error || `O servidor respondeu ${response.status}.`);
+    await carregarPedidosAdmin();
+  } catch (erro) {
+    alert(`Não foi possível atualizar o pedido: ${erro.message}`);
+    botao.disabled = false;
+  }
+}
+
+async function alterarEstoqueRapido(event) {
+  const botao = event.target.closest("[data-stock-save]");
+  if (!botao) return;
+  const id = botao.dataset.stockSave;
+  const input = document.querySelector(`[data-stock-input="${CSS.escape(id)}"]`);
+  const stock = Number(input?.value);
+  const expectedStock = estoqueBase.get(id);
+  if (!Number.isInteger(stock) || stock < 0 || !Number.isInteger(expectedStock)) {
+    alert("Informe um número inteiro igual ou maior que zero.");
+    return;
+  }
+  if (stock === expectedStock) return;
+  botao.disabled = true;
+  try {
+    const response = await fetch("/api/admin/stock", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items: [{ id, stock, expectedStock }] })
+    });
+    const resultado = await response.json();
+    if (response.status === 401) {
+      renderLogin(resultado.error || "Sua sessão expirou. Entre novamente.");
+      return;
+    }
+    if (!response.ok || !resultado.success) throw new Error(resultado.error || `O servidor respondeu ${response.status}.`);
+    estoqueBase.set(id, stock);
+    const indice = estado.produtos.findIndex((produto) => String(produto.id) === id);
+    if (indice >= 0) {
+      estado.produtos[indice].estoque = stock;
+      const estoqueInput = document.querySelector(`[data-p="${indice}"][data-k="estoque"]`);
+      if (estoqueInput) estoqueInput.value = String(stock);
+      const resumo = document.querySelector(`[data-product-card="${indice}"] [data-summary-stock]`);
+      if (resumo) resumo.textContent = `${stock} em estoque`;
+    }
+    await carregarPedidosAdmin();
+  } catch (erro) {
+    alert(`Não foi possível atualizar o estoque: ${erro.message}`);
+    botao.disabled = false;
+  }
 }
 
 function lerCamposLoja() {
@@ -276,7 +651,6 @@ function lerCamposLoja() {
   estado.loja.email = document.getElementById("loja_email").value;
   estado.loja.endereco = document.getElementById("loja_endereco").value;
   estado.loja.horario = document.getElementById("loja_horario").value;
-  estado.senhaAdmin = document.getElementById("senhaAdminCampo").value || estado.senhaAdmin;
   const logoPath = document.getElementById("loja_logo").value.trim();
   const bannerPath = document.getElementById("loja_banner").value.trim();
   if (logoPath) estado.loja.logo = logoPath;
@@ -289,7 +663,7 @@ function lerCamposLoja() {
   estado.pagamento.gateway.provedor = document.getElementById("gateway_provedor").value.trim();
 }
 
-async function sincronizarLojaComServidor() {
+async function sincronizarLojaComServidor(stockChanges = []) {
   if (window.location.protocol === "file:") return false;
   let health;
   try {
@@ -299,17 +673,16 @@ async function sincronizarLojaComServidor() {
   }
   if (health.status === 404) return false;
   if (!health.ok) throw new Error("A API da loja não está disponível.");
-  const senha = window.prompt("Digite a senha de sincronização configurada no servidor. Ela não será salva no navegador.");
-  if (!senha) return false;
   const response = await fetch("/api/admin/store", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Admin-Password": senha
-    },
-    body: JSON.stringify(estado)
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...estado, stockChanges })
   });
   const resultado = await response.json();
+  if (response.status === 401) {
+    renderLogin(resultado.error || "Sua sessão expirou. Entre novamente.");
+    throw new Error(resultado.error || "Sua sessão expirou. Entre novamente.");
+  }
   if (!response.ok) throw new Error(resultado.error || `O servidor respondeu ${response.status}.`);
   return true;
 }
@@ -433,6 +806,8 @@ function renderProdutos() {
       else if (k === "imagem" && !el.value.trim()) return;
       else if (k === "imagens") estado.produtos[i][k] = el.value.split(/\r?\n/).map((foto) => foto.trim()).filter(Boolean);
       else estado.produtos[i][k] = el.value;
+      if (k === "imagem") estado.produtos[i].imagemPendente = false;
+      if (k === "preco") estado.produtos[i].precoReferencia = false;
       const resumo = document.querySelector(`[data-product-card="${i}"]`);
       if (resumo) {
         if (k === "nome") resumo.querySelector("[data-summary-name]").textContent = estado.produtos[i].nome || "Produto sem nome";
@@ -451,6 +826,7 @@ function renderProdutos() {
       if (!el.files[0]) return;
       try {
         estado.produtos[Number(el.dataset.img)].imagem = await fileParaDataUrl(el.files[0]);
+        estado.produtos[Number(el.dataset.img)].imagemPendente = false;
       } catch (erro) {
         alert(`Não foi possível carregar a foto principal: ${erro.message}`);
         return;
@@ -519,5 +895,27 @@ function esc(texto) {
     .replaceAll(">", "&gt;");
 }
 
-if (sessionStorage.getItem(AUTH) === "1") renderPainel();
-else renderLogin();
+async function iniciarPainel() {
+  if (window.location.protocol === "file:") {
+    renderLogin("Abra o painel pelo endereço do servidor da loja para autenticar.");
+    document.getElementById("loginForm").querySelectorAll("input, button").forEach((elemento) => {
+      elemento.disabled = true;
+    });
+    return;
+  }
+  try {
+    const response = await fetch("/api/admin/session", { cache: "no-store" });
+    const resultado = await response.json();
+    if (!response.ok) throw new Error(resultado.error || `O servidor respondeu ${response.status}.`);
+    if (!resultado.authenticated) {
+      renderLogin();
+      return;
+    }
+    estado = await window.carregarLojaRemota();
+    renderPainel();
+  } catch (erro) {
+    renderLogin(`Não foi possível verificar a sessão: ${erro.message}`);
+  }
+}
+
+iniciarPainel();

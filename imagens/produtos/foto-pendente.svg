@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" role="img" aria-labelledby="title desc">
+  <title id="title">Foto do produto pendente</title>
+  <desc id="desc">Espaço reservado para a imagem original do fornecedor.</desc>
+  <rect width="600" height="600" rx="34" fill="#f5f1e9"/>
+  <circle cx="300" cy="260" r="112" fill="#ebe3d5"/>
+  <rect x="224" y="183" width="152" height="130" rx="20" fill="#fffdf8" stroke="#817565" stroke-width="9"/>
+  <circle cx="270" cy="225" r="14" fill="#c79337"/>
+  <path d="m238 289 42-42 31 28 24-21 27 35" fill="none" stroke="#526257" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="300" y="420" text-anchor="middle" fill="#38342e" font-family="Arial,sans-serif" font-size="25" font-weight="700">FOTO DO PRODUTO</text>
+  <text x="300" y="456" text-anchor="middle" fill="#777064" font-family="Arial,sans-serif" font-size="20">aguardando imagem original</text>
+</svg>

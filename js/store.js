@@ -1,6 +1,5 @@
 const STORAGE_LOJA = "mineironet_loja";
 const STORAGE_CARRINHO = "mineironet_carrinho";
-const STORAGE_PEDIDOS = "mineironet_pedidos";
 
 let loja = window.carregarLojaConfigurada();
 function lerCarrinhoSalvo() {
@@ -30,7 +29,7 @@ function escaparHTML(valor) {
   })[caractere]);
 }
 
-function atribuirImagem(imagem, origem, alternativa = "imagens/logo-pc-simbolo.svg") {
+function atribuirImagem(imagem, origem, alternativa = "imagens/logo-pc-horizontal.png") {
   if (!imagem) return;
   imagem.onerror = () => {
     imagem.onerror = null;
@@ -100,7 +99,7 @@ function renderTopo() {
   atribuirImagem($("#checkoutLogo"), loja.loja.logo);
   $("#checkoutBrandName").textContent = loja.loja.nome;
   $("#sloganLoja").textContent = loja.loja.slogan;
-  atribuirImagem($("#bannerImg"), loja.loja.banner, "imagens/hero-conforto.jpg");
+  atribuirImagem($("#bannerImg"), loja.loja.banner, "imagens/banner-bem-estar.png");
   $("#heroTitulo").textContent = loja.loja.slogan;
   $("#topTelefone").textContent = loja.loja.telefone;
   $("#topHorario").textContent = loja.loja.horario;
@@ -182,6 +181,16 @@ function renderProdutos() {
       </article>`
     )
     .join("");
+
+  $$(".card").forEach((card, index) => {
+    if (!lista[index]?.imagemPendente) return;
+    const areaImagem = card.querySelector(".card-img");
+    areaImagem.classList.add("imagem-pendente");
+    areaImagem.querySelector("img").alt = "Imagem ilustrativa; foto original pendente";
+    const notaImagem = document.createElement("span");
+    notaImagem.textContent = "Foto original pendente";
+    areaImagem.append(notaImagem);
+  });
 
   $$(".card-img img").forEach((imagem) => {
     imagem.onerror = () => {
@@ -420,6 +429,30 @@ function abrirCheckout() {
   fecharTudo();
   $("#checkout").classList.add("aberto");
   const gatewaySelecionado = loja.pagamento.metodo === "gateway";
+  const pedidoPendente = pedidoAtual
+    && ["AWAITING_PAYMENT", "PAYMENT_REPORTED", "PENDING", "GATEWAY_REVIEW"].includes(pedidoAtual.status)
+    && (!pedidoAtual.expiresAt || pedidoAtual.expiresAt > Date.now() / 1000);
+  if (pedidoPendente) {
+    $("#checkout").classList.add("pix-gerado");
+    $("#checkoutTitle").textContent = pedidoAtual.gateway === "blackcat" ? "Pagamento BlackCat" : "Pagamento PIX";
+    $("#checkoutForm").style.display = "none";
+    $("#pixBox").classList.add("visivel");
+    $("#pixOrderInfo").hidden = false;
+    $("#btnVoltarCheckout").hidden = true;
+    if (pedidoAtual.status === "PAYMENT_REPORTED") {
+      $("#btnPago").disabled = true;
+      $("#btnPago").textContent = "Pagamento informado";
+      $(".pix-confirm-note").textContent = "Seu aviso está registrado. Aguarde a confirmação da loja após a conferência do extrato.";
+    } else if (pedidoAtual.status === "GATEWAY_REVIEW") {
+      $("#btnPago").hidden = true;
+      $(".pix-confirm-note").textContent = "A loja está conferindo a cobrança. Não faça outro pagamento nem gere um novo pedido até receber retorno.";
+      $("#pixQrStatus").textContent = "Pedido em revisão. Aguarde a confirmação da loja.";
+    } else {
+      $("#btnPago").disabled = false;
+      $("#btnPago").hidden = false;
+    }
+    return;
+  }
   $("#checkout").classList.remove("gateway-pendente");
   $("#gatewayPending").hidden = true;
   $("#checkoutForm").hidden = false;
@@ -430,6 +463,19 @@ function abrirCheckout() {
   $("#btnPix").textContent = gatewaySelecionado ? "Gerar cobrança PIX" : "Gerar PIX";
   $("#checkout").classList.remove("pix-gerado");
   $("#pixBox").classList.remove("visivel");
+  $("#pixOrderInfo").hidden = true;
+  $("#pixOrderInfo").textContent = "";
+  $("#btnVoltarCheckout").hidden = false;
+  $("#btnPago").disabled = false;
+  $("#btnPago").hidden = false;
+  $("#gatewayPaymentStatus").hidden = true;
+  $("#gatewayPaymentStatus").textContent = "";
+  $("#pixQrStatus").textContent = "";
+  $("#pixInvoiceLink").hidden = true;
+  $(".pix-value-card").hidden = false;
+  $(".pix-qr-frame").hidden = false;
+  $(".pix-code-details").hidden = false;
+  $("#btnPago").textContent = gatewaySelecionado ? "Verificar pagamento" : "Já fiz o pagamento";
   $("#checkoutForm").style.display = "block";
   $("#sucesso").classList.remove("visivel");
   renderResumo();
@@ -496,11 +542,60 @@ async function buscarCep() {
   }
 }
 
-function txidPedido() {
-  return `MN${Date.now().toString(36).toUpperCase()}`.substring(0, 25);
+async function cancelarPedidoManual(orderId) {
+  const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/cancel`, { method: "POST" });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.error || `O servidor respondeu ${response.status}.`);
 }
 
-function gerarPix() {
+function converterItensDoPedido(itens) {
+  if (!Array.isArray(itens) || !itens.length) throw new Error("O servidor não retornou os produtos do pedido.");
+  return itens.map((item) => {
+    const quantity = Number(item.quantity);
+    const unitPriceCents = Number(item.unitPriceCents);
+    if (!item.productId || !item.name || !Number.isInteger(quantity) || quantity < 1
+      || !Number.isInteger(unitPriceCents) || unitPriceCents < 1) {
+      throw new Error("Os produtos retornados pelo servidor não estão válidos.");
+    }
+    return {
+      id: String(item.productId),
+      nome: String(item.name),
+      qtd: quantity,
+      preco: unitPriceCents / 100
+    };
+  });
+}
+
+function mostrarPedidoGatewayEmRevisao(dados, orderId, transactionId, mensagem) {
+  pedidoAtual = {
+    id: String(orderId),
+    transactionId: String(transactionId || ""),
+    gateway: "blackcat",
+    cliente: dados,
+    itens: carrinho.map((item) => ({ ...item })),
+    total: totalCarrinho(),
+    status: "GATEWAY_REVIEW",
+    criadoEm: new Date().toISOString()
+  };
+  $("#checkoutForm").style.display = "none";
+  $("#pixBox").classList.add("visivel");
+  $("#checkout").classList.add("pix-gerado");
+  $("#checkoutTitle").textContent = "Verificação do pagamento";
+  $("#btnVoltarCheckout").hidden = true;
+  $("#btnPago").hidden = true;
+  $(".pix-payment-heading h3").textContent = "Pedido em verificação";
+  $(".pix-payment-heading p").textContent = "A loja está conferindo a resposta do gateway.";
+  $(".pix-value-card").hidden = true;
+  $(".pix-qr-frame").hidden = true;
+  $(".pix-code-details").hidden = true;
+  $("#pixOrderInfo").textContent = `Pedido ${pedidoAtual.id} está em revisão pela loja.`;
+  $("#pixOrderInfo").hidden = false;
+  $("#pixQr").removeAttribute("src");
+  $("#pixQrStatus").textContent = "Não pague nem gere outra cobrança até a loja confirmar o status deste pedido.";
+  $(".pix-confirm-note").textContent = mensagem || "A resposta da cobrança precisa ser conferida pela loja.";
+}
+
+async function gerarPix() {
   const form = new FormData($("#checkoutForm"));
   const dados = Object.fromEntries(form.entries());
   if (!dados.nome || !dados.cpf || !dados.telefone || !dados.cep) {
@@ -521,43 +616,95 @@ function gerarPix() {
     alert("A loja ainda não configurou uma chave PIX válida. Entre em contato pelo WhatsApp.");
     return;
   }
-  const txid = txidPedido();
-  pixPayload = window.PixBR.gerarPayload({
-    chave: loja.pix.chave,
-    nomeRecebedor: loja.pix.nomeRecebedor,
-    cidade: loja.pix.cidade,
-    valor: totalCarrinho(),
-    txid
-  });
-  pedidoAtual = {
-    id: txid,
-    cliente: dados,
-    itens: carrinho,
-    total: totalCarrinho(),
-    pix: pixPayload,
-    status: "aguardando_pagamento",
-    criadoEm: new Date().toISOString()
-  };
-  $("#pixCode").textContent = pixPayload;
-  $("#checkoutForm").style.display = "none";
-  $("#pixBox").classList.add("visivel");
-  $("#checkout").classList.add("pix-gerado");
-  $("#checkoutTitle").textContent = "Pagamento PIX";
-  const statusQr = $("#pixQrStatus");
+  const botao = $("#btnPix");
+  botao.disabled = true;
+  botao.textContent = "Reservando estoque...";
+  let orderId = "";
   try {
-    if (typeof window.qrcode !== "function") {
-      throw new Error("A biblioteca geradora de QR Code não foi carregada.");
+    const response = await fetch("/api/orders/manual", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        customer: { name: dados.nome, email: dados.email, phone: dados.telefone },
+        shipping: {
+          street: dados.rua,
+          number: dados.numero,
+          complement: dados.obs,
+          neighborhood: dados.bairro,
+          city: dados.cidade,
+          state: dados.uf,
+          zipCode: dados.cep
+        },
+        items: carrinho.map((item) => ({ id: item.id, quantity: item.qtd }))
+      })
+    });
+    const result = await response.json();
+    if (!response.ok || !result.success) {
+      throw new Error(result.error || `O servidor respondeu ${response.status}.`);
     }
-    const qr = window.qrcode(0, "M");
-    qr.addData(pixPayload, "Byte");
-    qr.make();
-    $("#pixQr").src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(qr.createSvgTag(8, 4, "QR Code PIX"))}`;
-    statusQr.textContent = "";
+    orderId = String(result.orderId || "");
+    const total = Number(result.amountCents) / 100;
+    const itensPedido = converterItensDoPedido(result.items);
+    const totalItens = itensPedido.reduce((soma, item) => soma + Math.round(item.preco * 100) * item.qtd, 0);
+    if (!orderId || !Number.isFinite(total) || Math.round(total * 100) !== totalItens) {
+      throw new Error("O valor e os produtos retornados pelo servidor não correspondem. Atualize a página e tente novamente.");
+    }
+    pixPayload = window.PixBR.gerarPayload({
+      chave: loja.pix.chave,
+      nomeRecebedor: loja.pix.nomeRecebedor,
+      cidade: loja.pix.cidade,
+      valor: total,
+      txid: orderId
+    });
+    pedidoAtual = {
+      id: orderId,
+      cliente: dados,
+      itens: itensPedido,
+      total,
+      pix: pixPayload,
+      status: "AWAITING_PAYMENT",
+      criadoEm: new Date().toISOString(),
+      expiresAt: Number(result.expiresAt)
+    };
+    $("#pixCode").textContent = pixPayload;
+    $("#checkoutForm").style.display = "none";
+    $("#pixBox").classList.add("visivel");
+    $("#checkout").classList.add("pix-gerado");
+    $("#checkoutTitle").textContent = "Pagamento PIX";
+    $("#btnVoltarCheckout").hidden = true;
+    $(".pix-confirm-note").textContent = "O estoque está reservado por até 24 horas. Ao informar que pagou, o pedido ficará aguardando a confirmação da loja após conferência do extrato.";
+    const infoPedido = $("#pixOrderInfo");
+    infoPedido.textContent = `Pedido ${orderId} · reserva até ${new Date(pedidoAtual.expiresAt * 1000).toLocaleString("pt-BR")}.`;
+    infoPedido.hidden = false;
+    const statusQr = $("#pixQrStatus");
+    try {
+      if (typeof window.qrcode !== "function") {
+        throw new Error("A biblioteca geradora de QR Code não foi carregada.");
+      }
+      const qr = window.qrcode(0, "M");
+      qr.addData(pixPayload, "Byte");
+      qr.make();
+      $("#pixQr").src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(qr.createSvgTag(8, 4, "QR Code PIX"))}`;
+      statusQr.textContent = "";
+    } catch (erro) {
+      console.error("Não foi possível gerar o QR Code PIX.", erro);
+      statusQr.textContent = "QR Code indisponível. Use o código PIX Copia e Cola abaixo.";
+    }
+    $("#pixValor").textContent = dinheiro(total);
   } catch (erro) {
-    console.error("Não foi possível gerar o QR Code PIX.", erro);
-    statusQr.textContent = "QR Code indisponível. Use o código PIX Copia e Cola abaixo.";
+    if (orderId) {
+      try {
+        await cancelarPedidoManual(orderId);
+      } catch (erroCancelamento) {
+        alert(`Não foi possível concluir o PIX (${erro.message}) nem liberar a reserva (${erroCancelamento.message}). Entre em contato com a loja antes de refazer o pedido.`);
+        return;
+      }
+    }
+    alert(`Não foi possível criar o pedido PIX: ${erro.message}`);
+  } finally {
+    botao.disabled = false;
+    botao.textContent = "Gerar cobrança PIX";
   }
-  $("#pixValor").textContent = dinheiro(totalCarrinho());
 }
 
 async function gerarCobrancaBlackCat(dados) {
@@ -589,21 +736,33 @@ async function gerarCobrancaBlackCat(dados) {
     });
     const result = await response.json();
     if (!response.ok || !result.success || !result.data) {
+      if (result.orderId) {
+        mostrarPedidoGatewayEmRevisao(dados, result.orderId, result.transactionId, result.error);
+      }
       throw new Error(result.error || "O servidor não conseguiu criar a cobrança BlackCat.");
     }
     const charge = result.data;
     const payment = charge.paymentData || {};
-    const total = totalCarrinho();
-    if (!charge.transactionId || Number(charge.amount) !== Math.round(total * 100)) {
+    const total = Number(charge.amount) / 100;
+    let itensPedido;
+    try {
+      itensPedido = converterItensDoPedido(charge.items);
+    } catch (erro) {
+      if (charge.orderId) mostrarPedidoGatewayEmRevisao(dados, charge.orderId, charge.transactionId, erro.message);
+      throw erro;
+    }
+    const totalItens = itensPedido.reduce((soma, item) => soma + Math.round(item.preco * 100) * item.qtd, 0);
+    if (!charge.transactionId || !Number.isFinite(total) || Math.round(total * 100) !== totalItens) {
+      if (charge.orderId) mostrarPedidoGatewayEmRevisao(dados, charge.orderId, charge.transactionId, "O valor ou os produtos da cobrança precisam ser conferidos com a loja. Não pague até receber confirmação.");
       throw new Error("Os dados da cobrança não correspondem ao total do pedido. Não pague e fale com a loja.");
     }
     pixPayload = String(payment.copyPaste || payment.qrCode || "");
     pedidoAtual = {
-      id: String(charge.transactionId),
+      id: String(charge.orderId || charge.transactionId),
       transactionId: String(charge.transactionId),
       gateway: "blackcat",
       cliente: dados,
-      itens: carrinho.map((item) => ({ ...item })),
+      itens: itensPedido,
       total,
       pix: pixPayload,
       status: charge.status || "PENDING",
@@ -615,9 +774,12 @@ async function gerarCobrancaBlackCat(dados) {
     $("#checkoutForm").style.display = "none";
     $("#checkout").classList.add("pix-gerado");
     $("#checkoutTitle").textContent = "Pagamento BlackCat";
+    $("#btnVoltarCheckout").hidden = true;
     $(".pix-payment-heading h3").textContent = "Cobrança PIX pronta";
     $(".pix-payment-heading p").textContent = "Escaneie o QR Code gerado pela BlackCat para pagar.";
     $(".pix-confirm-note").textContent = "O status será confirmado diretamente com a BlackCat antes de registrar o pedido como pago.";
+    $("#pixOrderInfo").textContent = `Pedido ${pedidoAtual.id} · estoque reservado enquanto a cobrança estiver pendente.`;
+    $("#pixOrderInfo").hidden = false;
     $("#btnPago").textContent = "Verificar pagamento";
     const imagemQr = $("#pixQr");
     const statusQr = $("#pixQrStatus");
@@ -684,6 +846,7 @@ async function confirmarPagamento() {
       const result = await response.json();
       if (!response.ok || !result.success) throw new Error(result.error || "Não foi possível consultar o pagamento.");
       if (result.data.status !== "PAID" || Number(result.data.amount) !== Math.round(pedidoAtual.total * 100)) {
+        if (result.data.status === "CANCELLED" || result.data.status === "REFUNDED") pedidoAtual.status = result.data.status;
         statusPagamento.textContent = result.data.status === "CANCELLED" || result.data.status === "REFUNDED"
           ? "A cobrança foi cancelada ou estornada. Gere uma nova cobrança ou fale com a loja."
           : "Pagamento ainda pendente. Aguarde a confirmação do banco e tente novamente.";
@@ -697,15 +860,17 @@ async function confirmarPagamento() {
       botao.disabled = false;
     }
   } else {
-    pedidoAtual.status = "pago_informado";
-  }
-  try {
-    const pedidosSalvos = JSON.parse(localStorage.getItem(STORAGE_PEDIDOS) || "[]");
-    const pedidos = Array.isArray(pedidosSalvos) ? pedidosSalvos : [];
-    pedidos.unshift(pedidoAtual);
-    localStorage.setItem(STORAGE_PEDIDOS, JSON.stringify(pedidos));
-  } catch (erro) {
-    console.warn("Não foi possível guardar o pedido neste navegador.", erro);
+    try {
+      const response = await fetch(`/api/orders/${encodeURIComponent(pedidoAtual.id)}/report-payment`, { method: "POST" });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.error || `O servidor respondeu ${response.status}.`);
+      pedidoAtual.status = "PAYMENT_REPORTED";
+      $("#btnPago").disabled = true;
+      $("#btnPago").textContent = "Pagamento informado";
+    } catch (erro) {
+      $("#pixQrStatus").textContent = `Não foi possível registrar o aviso de pagamento: ${erro.message}`;
+      return;
+    }
   }
   $("#checkoutForm").style.display = "none";
   $("#pixBox").classList.remove("visivel");
